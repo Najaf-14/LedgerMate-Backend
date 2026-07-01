@@ -41,6 +41,16 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    imageUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    thumbnailUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
