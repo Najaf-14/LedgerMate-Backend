@@ -3,13 +3,11 @@ const productService = require("../services/productService");
 const createProduct = async (req, res) => {
   try {
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error creating product",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error creating product",
+      error: error.message,
+    });
   }
 };
 

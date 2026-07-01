@@ -12,7 +12,8 @@ const signup = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error creating product",
+      error: error.message,
     });
   }
 };
@@ -29,7 +30,8 @@ const login = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Error creating product",
+      error: error.message,
     });
   }
 };
