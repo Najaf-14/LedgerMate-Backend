@@ -36,6 +36,29 @@ const signup = async (userData) => {
 
   return { user, token };
 };
-const login = async (loginData) => {};
+
+const login = async (loginData) => {
+  const {emailORphoneNo, password} = loginData;
+
+  console.log(loginData);
+  const user = await User.findOne({
+    $or: [
+      { email: emailORphoneNo},
+      { phoneNo: emailORphoneNo}
+    ]
+  });
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isPasswordValid = await bycrypt.compare(password, user.password);
+  if(!isPasswordValid){
+    throw new Error("Invalid credentials");
+  }
+
+  const token = generateToken(user._id);
+
+  return { user, token };
+};
 
 module.exports = { signup, login };
