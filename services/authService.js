@@ -33,14 +33,13 @@ const signup = async (userData) => {
   });
 
   const token = generateToken(user._id);
-
+  
   return { user, token };
 };
 
 const login = async (loginData) => {
   const {emailORphoneNo, password} = loginData;
 
-  console.log(loginData);
   const user = await User.findOne({
     $or: [
       { email: emailORphoneNo},
