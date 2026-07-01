@@ -5,6 +5,10 @@ const generateToken = require("../utils/generateToken");
 const signup = async (userData) => {
   const { name, email, phoneNo, password, confirmPassword } = userData;
 
+  if (!name || !email || !phoneNo || !password || !confirmPassword) {
+    throw new Error("All fields are required");
+  }
+
   if (password !== confirmPassword) {
     throw new Error("Passwords do not match");
   }
@@ -40,6 +44,10 @@ const signup = async (userData) => {
 const login = async (loginData) => {
   const {emailORphoneNo, password} = loginData;
 
+  if (!emailORphoneNo || !password) {
+    throw new Error("All fields are required");
+  }
+  
   const user = await User.findOne({
     $or: [
       { email: emailORphoneNo},
