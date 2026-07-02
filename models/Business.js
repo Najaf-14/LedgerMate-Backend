@@ -43,7 +43,7 @@ const businessSchema = new mongoose.Schema(
       default: "PKR",
     },
   },
-  {
+  { 
     timestamps: true,
   },
 );
