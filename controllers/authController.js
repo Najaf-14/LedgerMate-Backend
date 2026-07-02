@@ -10,10 +10,9 @@ const signup = async (req, res) => {
       result,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
-      message: "Error creating user",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -28,10 +27,9 @@ const login = async (req, res) => {
       result,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
-      message: "Error logging in user",
-      error: error.message,
+      message: error.message,
     });
   }
 };

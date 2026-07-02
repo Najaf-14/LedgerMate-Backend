@@ -7,6 +7,8 @@ const cors = require("cors");
 //! Routes
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const businessRoutes = require("./routes/businessRoutes");
+
 const log = require("./middleware/requestLogger");
 
 app.use(cors());
@@ -19,6 +21,7 @@ app.use(log);
 connectDB();
 
 app.use("/api/auth", authRoutes);
+app.use("/api/business", businessRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT || "0.0.0.0", (req, res) => {
