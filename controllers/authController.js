@@ -12,7 +12,7 @@ const signup = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error creating product",
+      message: "Error creating user",
       error: error.message,
     });
   }
@@ -30,7 +30,7 @@ const login = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error creating product",
+      message: "Error logging in user",
       error: error.message,
     });
   }

@@ -2,7 +2,7 @@ const productService = require("../services/productService");
 
 const createProduct = async (req, res) => {
   try {
-    const result = await productService.createProduct(req.body);
+    const result = await productService.createProduct(req.body, req.user._id);
 
     res.status(201).json({
       success: true,
@@ -20,7 +20,7 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const result = await productService.getAllProducts();
+    const result = await productService.getAllProducts(req.user._id);
 
     res.status(200).json({
       success: true,
@@ -39,7 +39,7 @@ const getAllProducts = async (req, res) => {
 const getProductById = async (req, res) => {
   try {
     const id = req.params.id;
-    const result = await productService.getProductById(id);
+    const result = await productService.getProductById(id, req.user._id);
 
     res.status(200).json({
       success: true,
@@ -58,7 +58,11 @@ const getProductById = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const result = await productService.updateProduct(id);
+    const result = await productService.updateProduct(
+      id,
+      req.body,
+      req.user._id,
+    );
 
     res.status(200).json({
       success: true,
@@ -77,7 +81,7 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const id = req.params.id;
-    const result = await productService.deleteProduct(id);
+    const result = await productService.deleteProduct(id, req.user._id);
 
     res.status(200).json({
       success: true,
