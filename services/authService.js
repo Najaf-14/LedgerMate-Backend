@@ -55,12 +55,12 @@ const login = async (loginData) => {
     ]
   });
   if (!user) {
-    throw new Error("Invalid credentials");
+    throw new Error("User does not exist");
   }
 
   const isPasswordValid = await bycrypt.compare(password, user.password);
   if(!isPasswordValid){
-    throw new Error("Invalid credentials");
+    throw new Error("Invalid password");
   }
 
   const token = generateToken(user._id);
