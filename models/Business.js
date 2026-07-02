@@ -8,38 +8,36 @@ const businessSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
     businessName: {
       type: String,
-      required: true,
+      required: [true, "Business name is required"],
       trim: true,
     },
-
     ownerName: {
       type: String,
-      required: true,
+      required: [true, "Owner name is required"],
       trim: true,
     },
-
-    phoneNumber: {
+    phoneNo: {
       type: String,
-      required: true,
+      required: [true, "Phone number is required"],
+      trim: true,
+      minlength: 10,
+      maxlength: 15,
     },
-
     address: {
       type: String,
+      trim: true,
     },
-
     businessType: {
       type: String,
+      trim: true,
     },
-
     mode: {
       type: String,
       enum: ["simple", "advanced"],
       default: "simple",
     },
-
     currency: {
       type: String,
       default: "PKR",
