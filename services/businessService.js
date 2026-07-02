@@ -1,0 +1,41 @@
+const Business = require("../models/Business");
+
+const createBusiness = async (userId, businessData) => {
+  const existingBusiness = await Business.findOne({ userId });
+
+  if (existingBusiness) {
+    throw new Error("Business already exists for this user.");
+  }
+
+  const business = await Business.create({
+    ...businessData,
+    userId,
+  });
+
+  return business;
+};
+
+const getBusiness = async (userId) => {
+  const business = await Business.findOne({ userid });
+
+  if (!business) {
+    throw new Error("Business profile not found.");
+  }
+
+  return business;
+};
+
+const updateBusiness = async (userId, businessData) => {
+  const business = await Business.findOneAndUpdate({ userid }, businessData, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!business) {
+    throw new Error("Business profile not found.");
+  }
+
+  return business;
+};
+
+module.exports = { createBusiness, getBusiness, updateBusiness };
