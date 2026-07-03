@@ -5,7 +5,13 @@ const generateToken = require("../utils/generateToken");
 const signup = async (userData) => {
   const { name, email, phoneNo, password, confirmPassword } = userData;
 
-  if (!name || !email || !phoneNo || !password || !confirmPassword) {
+  if (
+    !name?.trim() ||
+    !email?.trim() ||
+    !phoneNo?.trim() ||
+    !password?.trim() ||
+    !confirmPassword?.trim()
+  ) {
     throw new Error("All fields are required");
   }
 
@@ -37,29 +43,26 @@ const signup = async (userData) => {
   });
 
   const token = generateToken(user._id);
-  
+
   return { user, token };
 };
 
 const login = async (loginData) => {
-  const {emailORphoneNo, password} = loginData;
+  const { emailORphoneNo, password } = loginData;
 
-  if (!emailORphoneNo || !password) {
+  if (!emailORphoneNo?.trim() || !password?.trim()) {
     throw new Error("All fields are required");
   }
-  
+
   const user = await User.findOne({
-    $or: [
-      { email: emailORphoneNo},
-      { phoneNo: emailORphoneNo}
-    ]
+    $or: [{ email: emailORphoneNo }, { phoneNo: emailORphoneNo }],
   });
   if (!user) {
     throw new Error("User does not exist");
   }
 
   const isPasswordValid = await bycrypt.compare(password, user.password);
-  if(!isPasswordValid){
+  if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
 
