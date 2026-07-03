@@ -34,4 +34,20 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { signup, login };
+const getMe = async (req, res) => {
+  try {
+    const result = await authService.getMe(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { signup, login, getMe };
