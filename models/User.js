@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      match: [
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,}$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, one special character and be at least 8 characters long.",
+      ],
     },
   },
   {
