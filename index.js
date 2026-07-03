@@ -3,6 +3,7 @@ const app = express();
 
 const env = require("dotenv").config();
 const cors = require("cors");
+const compression = require("compression");
 
 //! Routes
 const connectDB = require("./config/db");
@@ -14,6 +15,7 @@ const log = require("./middleware/requestLogger");
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(compression());
 
 // log middleware
 app.use(log);
