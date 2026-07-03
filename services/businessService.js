@@ -1,3 +1,5 @@
+const Business = require("../models/Business");
+
 const createBusiness = async (userId, businessData) => {
   const existingBusiness = await Business.findOne({ userId });
 
@@ -33,3 +35,5 @@ const updateBusiness = async (userId, businessData) => {
 
   return business;
 };
+
+module.exports = { createBusiness, getBusiness, updateBusiness };
