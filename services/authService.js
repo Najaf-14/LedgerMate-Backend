@@ -30,13 +30,11 @@ const signup = async (userData) => {
     throw new Error("Phone number already exists");
   }
 
-  const hashedPassword = await bycrypt.hash(password, 10);
-
   const user = await User.create({
     name,
     email,
     phoneNo,
-    password: hashedPassword,
+    password,
   });
 
   const token = generateToken(user._id);
@@ -78,6 +76,7 @@ const login = async (loginData) => {
       name: user.name,
       email: user.email,
       phoneNo: user.phoneNo,
+      role: user.role,
     },
     business: {
       _id: business._id,
