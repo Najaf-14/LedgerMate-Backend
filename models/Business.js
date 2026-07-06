@@ -40,6 +40,7 @@ const businessSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
+      uppercase: true,
       default: "PKR",
     },
   },

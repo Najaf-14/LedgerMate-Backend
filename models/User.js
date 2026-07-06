@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -9,6 +10,7 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 50,
     },
+
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -20,13 +22,18 @@ const userSchema = new mongoose.Schema(
         "Please enter a valid email address",
       ],
     },
+
     phoneNo: {
       type: String,
       required: [true, "Phone number is required"],
       unique: true,
       trim: true,
-      match: [/^03\d{9}$/, "Phone number must be in format 03XXXXXXXXX"],
+      match: [
+        /^03\d{9}$/,
+        "Phone number must be in format 03XXXXXXXXX",
+      ],
     },
+
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -35,11 +42,26 @@ const userSchema = new mongoose.Schema(
         "Password must contain at least one uppercase letter, one lowercase letter, one number, one special character and be at least 8 characters long.",
       ],
     },
+
+    role: {
+      type: String,
+      enum: ["user", "admin", "super_admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) {
+    return;
+  }
+
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
 const User = mongoose.model("User", userSchema);
+
 module.exports = User;
