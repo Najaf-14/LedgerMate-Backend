@@ -1,9 +1,25 @@
 const { model } = require("mongoose");
 const customerServices = require("../services/customerServices");
 
-const createCustomer = async (req, res) => {  
+const createCustomer = async (req, res) => {
   try {
-    const customer = await customerServices.createCustomer(req.body, req.user.id);
+    const { name, phoneNo, email, address } = req.body;
+
+    if (!name?.trim()) {
+      throw new Error("Customer name is required");
+    }
+
+    if (!phoneNo?.trim()) {
+      throw new Error("Phone number is required");
+    }
+
+    if (email && !email.trim()) {
+      throw new Error("Email cannot be empty");
+    }
+    const customer = await customerServices.createCustomer(
+      req.body,
+      req.user.id,
+    );
 
     res.status(201).json({
       success: true,
@@ -24,7 +40,7 @@ const getCustomers = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Customer details",
+      message: "All Customers",
       customer,
     });
   } catch (error) {
@@ -37,11 +53,14 @@ const getCustomers = async (req, res) => {
 
 const getCustomer = async (req, res) => {
   try {
-    const customer = await customerServices.getCustomer(req.params.id, req.user.id);
+    const customer = await customerServices.getCustomer(
+      req.params.id,
+      req.user.id,
+    );
 
     res.status(200).json({
       success: true,
-      message: "All customers",
+      message: "Customer Details",
       customer,
     });
   } catch (error) {
@@ -63,7 +82,10 @@ const searchCustomers = async (req, res) => {
       });
     }
 
-    const customers = await customerServices.searchCustomers(query, req.user.id);
+    const customers = await customerServices.searchCustomers(
+      query,
+      req.user.id,
+    );
 
     res.status(200).json({
       success: true,
@@ -80,7 +102,25 @@ const searchCustomers = async (req, res) => {
 
 const updateCustomer = async (req, res) => {
   try {
-    const customer = await customerServices.updateCustomer(req.params.id, req.body, req.user.id);
+    const { name, phoneNo, email, address } = req.body;
+
+    if (!name?.trim()) {
+      throw new Error("Customer name is required");
+    }
+
+    if (!phoneNo?.trim()) {
+      throw new Error("Phone number is required");
+    }
+
+    if (email && !email.trim()) {
+      throw new Error("Email cannot be empty");
+    }
+
+    const customer = await customerServices.updateCustomer(
+      req.params.id,
+      req.body,
+      req.user.id,
+    );
 
     res.status(200).json({
       success: true,
