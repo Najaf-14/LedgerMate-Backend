@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const entrySchema = mongoose.Schema(
   {
+    business: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Business",
+      required: [true, "Business is required"],
+    },
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
@@ -22,40 +27,26 @@ const entrySchema = mongoose.Schema(
       required: [true, "Total price must be entered manually"],
       min: [0, "Price cannot be negative"],
     },
-    discount: {
-      type: Number,
-      default: 0,
-      min: [0, "Discount cannot be negative"],
-    },
-    finalAmount: {
-      type: Number,
-      required: true,
+    transactionDate: {
+      type: Date,
+      required: [true, "Transaction date is required"],
+      default: Date.now,
     },
     paymentType: {
       type: String,
+      enum: ["Cash", "Online", "Credit"],
       required: [true, "Payment type is required"],
-      trim: true, // e.g., 'Cash', 'Online', 'Credit'
     },
     notes: {
       type: String,
       maxLength: [200, "Notes cannot exceed 200 characters"],
       trim: true,
     },
-    transactionDate: {
-      type: Date,
-      required: [true, "Transaction date is required"],
-      default: Date.now,
-    },
   },
   {
     timestamps: true,
   },
 );
-
-entrySchema.pre("save", function (next) {
-  this.finalAmount = this.manualTotalPrice - this.discount;
-  next();
-});
 
 const Entry = mongoose.model("Entry", entrySchema);
 

@@ -10,7 +10,7 @@ const {
   searchCustomers,
   updateCustomer,
   deleteCustomer,
-} = require("../controllers/customerController");
+} = require("../controllers/customerController"); 
 
 router.use(authMiddleware);
 
