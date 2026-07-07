@@ -52,6 +52,32 @@ const getCustomer = async (req, res) => {
   }
 };
 
+const searchCustomers = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+      });
+    }
+
+    const customers = await customerServices.searchCustomers(query);
+
+    res.status(200).json({
+      success: true,
+      count: customers.length,
+      customers,
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const updateCustomer = async (req, res) => {
   try {
     const customer = await updateCustomer(req.params.id, req.body);
@@ -89,6 +115,7 @@ module.exports = {
   createCustomer,
   getCustomers,
   getCustomer,
+  searchCustomers,
   updateCustomer,
   deleteCustomer,
 };
