@@ -18,7 +18,7 @@ router.post("/", createCustomer);
 router.get("/", getCustomers);
 router.get("/search", searchCustomers);
 router.get("/:id", getCustomer);
-router.put("/", updateCustomer);
+router.put("/:id", updateCustomer);
 router.delete("/:id", deleteCustomer);
 
 module.exports = router;
