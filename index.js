@@ -9,6 +9,7 @@ const compression = require("compression");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 const log = require("./middleware/requestLogger");
 
@@ -24,6 +25,7 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
+app.use("/api/customer", customerRoutes)
 
 const PORT = process.env.PORT;
 app.listen(PORT || "0.0.0.0", (req, res) => {
