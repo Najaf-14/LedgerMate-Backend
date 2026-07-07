@@ -1,10 +1,11 @@
 const { model } = require("mongoose");
 const customerServices = require("../services/customerServices");
 
-const createCustomer = async (req, res) => {
+const createCustomer = async (req, res) => {  
   try {
-    const customer = await customerServices.createCustomer(req.body);
+    const customer = await customerServices.createCustomer(req.body, req.user.id);
 
+    console.log("Busines ID: ", req.user.id)
     res.status(201).json({
       success: true,
       message: "Customer created successfully",
@@ -20,7 +21,7 @@ const createCustomer = async (req, res) => {
 
 const getCustomers = async (req, res) => {
   try {
-    const customer = await customerServices.getCustomers();
+    const customer = await customerServices.getCustomers(req.user.id);
 
     res.status(200).json({
       success: true,
@@ -37,7 +38,7 @@ const getCustomers = async (req, res) => {
 
 const getCustomer = async (req, res) => {
   try {
-    const customer = await customerServices.getCustomer(req.params.id);
+    const customer = await customerServices.getCustomer(req.params.id, req.user.id);
 
     res.status(200).json({
       success: true,
@@ -63,7 +64,7 @@ const searchCustomers = async (req, res) => {
       });
     }
 
-    const customers = await customerServices.searchCustomers(query);
+    const customers = await customerServices.searchCustomers(query, req.user.id);
 
     res.status(200).json({
       success: true,
@@ -80,7 +81,7 @@ const searchCustomers = async (req, res) => {
 
 const updateCustomer = async (req, res) => {
   try {
-    const customer = await updateCustomer(req.params.id, req.body);
+    const customer = await customerServices.updateCustomer(req.params.id, req.body, req.user.id);
 
     res.status(200).json({
       success: true,
@@ -97,7 +98,7 @@ const updateCustomer = async (req, res) => {
 
 const deleteCustomer = async (req, res) => {
   try {
-    await customerServices.deleteCustomer(req.params.id);
+    await customerServices.deleteCustomer(req.params.id, req.user.id);
 
     res.status(200).json({
       success: true,
