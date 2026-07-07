@@ -2,11 +2,18 @@ const mongoose = require("mongoose");
 
 const customerSchema = mongoose.Schema(
   {
+    business: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Business",
+      required: [true, "Business is required"],
+    },
+
     name: {
       type: String,
-      required: [true, "Customer is required"],
+      required: [true, "Customer name is required"],
       trim: true,
     },
+
     email: {
       type: String,
       trim: true,
@@ -16,13 +23,14 @@ const customerSchema = mongoose.Schema(
         "Please enter a valid email address",
       ],
     },
+
     phoneNo: {
       type: String,
       required: [true, "Phone number is required"],
-      unique: true,
       trim: true,
       match: [/^03\d{9}$/, "Phone number must be in format 03XXXXXXXXX"],
     },
+
     address: {
       type: String,
       trim: true,
@@ -30,7 +38,12 @@ const customerSchema = mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
+);
+
+customerSchema.index(
+  { business: 1, phoneNo: 1 },
+  { unique: true }
 );
 
 const Customer = mongoose.model("Customer", customerSchema);
