@@ -56,3 +56,7 @@ entrySchema.pre("save", function (next) {
   this.finalAmount = this.manualTotalPrice - this.discount;
   next();
 });
+
+const Entry = mongoose.model("Entry", entrySchema);
+
+module.exports = Entry;
