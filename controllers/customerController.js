@@ -5,7 +5,6 @@ const createCustomer = async (req, res) => {
   try {
     const customer = await customerServices.createCustomer(req.body, req.user.id);
 
-    console.log("Busines ID: ", req.user.id)
     res.status(201).json({
       success: true,
       message: "Customer created successfully",
