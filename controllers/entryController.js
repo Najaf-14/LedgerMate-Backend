@@ -3,7 +3,7 @@ const entryServices = require("../services/entryServices");
 const createEntry = async (req, res) => {
   try {
     const {
-      customer,
+      name,
       entryType,
       itemsDescription,
       manualTotalPrice,
@@ -11,8 +11,8 @@ const createEntry = async (req, res) => {
       paymentType,
     } = req.body;
 
-    if (!customer) {
-      throw new Error("Customer is required");
+    if (!name?.trim()) {
+      throw new Error("Customer name is required");
     }
 
     if (!entryType?.trim()) {
@@ -31,14 +31,7 @@ const createEntry = async (req, res) => {
       throw new Error("Transaction date is required");
     }
 
-    if (!paymentType?.trim()) {
-      throw new Error("Payment type is required");
-    }
-
-    const entry = await entryServices.createEntry(
-      req.body,
-      req.user.id
-    );
+    const entry = await entryServices.createEntry(req.body, req.user.id);
 
     res.status(201).json({
       success: true,
@@ -72,10 +65,7 @@ const getEntries = async (req, res) => {
 
 const getEntry = async (req, res) => {
   try {
-    const entry = await entryServices.getEntry(
-      req.params.id,
-      req.user.id
-    );
+    const entry = await entryServices.getEntry(req.params.id, req.user.id);
 
     res.status(200).json({
       success: true,
@@ -98,7 +88,7 @@ const updateEntry = async (req, res) => {
     const entry = await entryServices.updateEntry(
       req.params.id,
       req.body,
-      req.user.id
+      req.user.id,
     );
 
     res.status(200).json({
@@ -116,10 +106,7 @@ const updateEntry = async (req, res) => {
 
 const deleteEntry = async (req, res) => {
   try {
-    await entryServices.deleteEntry(
-      req.params.id,
-      req.user.id
-    );
+    await entryServices.deleteEntry(req.params.id, req.user.id);
 
     res.status(200).json({
       success: true,
