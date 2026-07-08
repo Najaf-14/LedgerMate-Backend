@@ -72,17 +72,17 @@ const getCustomer = async (req, res) => {
 
 const searchCustomers = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { name } = req.query;
 
-    if (!query) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        message: "Search query is required",
+        message: "Name is required",
       });
     }
 
     const customers = await customerServices.searchCustomers(
-      query,
+      name,
       req.user.id,
     );
 
