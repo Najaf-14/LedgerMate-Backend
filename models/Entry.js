@@ -14,7 +14,7 @@ const entrySchema = mongoose.Schema(
     },
     entryType: {
       type: String,
-      enum: ["Sale", "Purchase"],
+      enum: ["sale", "purchase"],
       required: [true, "Entry type must be either Sale or Purchase"],
     },
     itemsDescription: {
