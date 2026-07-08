@@ -3,8 +3,8 @@ const Customer = require("../models/Customer");
 
 const createEntry = async (data, businessId) => {
   const customer = await Customer.findOne({
-    _id: data.customer,
     business: businessId,
+    name: data.name,
   });
 
   if (!customer) {
@@ -14,8 +14,13 @@ const createEntry = async (data, businessId) => {
   }
 
   return await Entry.create({
-    ...data,
     business: businessId,
+    customer: customer._id,
+    entryType: data.entryType,
+    itemsDescription: data.itemsDescription,
+    manualTotalPrice: data.manualTotalPrice,
+    transactionDate: data.transactionDate,
+    notes: data.notes,
   });
 };
 
@@ -50,7 +55,7 @@ const updateEntry = async (id, data, businessId) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   if (!entry) {
