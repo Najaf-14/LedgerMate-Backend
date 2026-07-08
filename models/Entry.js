@@ -32,11 +32,6 @@ const entrySchema = mongoose.Schema(
       required: [true, "Transaction date is required"],
       default: Date.now,
     },
-    paymentType: {
-      type: String,
-      enum: ["Cash", "Online", "Credit"],
-      required: [true, "Payment type is required"],
-    },
     notes: {
       type: String,
       maxLength: [200, "Notes cannot exceed 200 characters"],
