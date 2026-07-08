@@ -1,4 +1,3 @@
-const { model } = require("mongoose");
 const customerServices = require("../services/customerServices");
 
 const createCustomer = async (req, res) => {
