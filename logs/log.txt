@@ -1,0 +1,11 @@
+
+        Time   : 7/8/2026, 4:06:30 PM
+        Method : GET
+        URL    : /api/customer/search?name=najaf
+        IP     : ::1
+    
+        Time   : 7/8/2026, 4:06:47 PM
+        Method : GET
+        URL    : /api/customer/search?name=ali
+        IP     : ::1
+    
