@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const customerSchema = mongoose.Schema(
+const supplierSchema = mongoose.Schema(
   {
     business: {
       type: mongoose.Schema.Types.ObjectId,
@@ -9,7 +9,7 @@ const customerSchema = mongoose.Schema(
     },
     name: {
       type: String,
-      required: [true, "Customer name is required"],
+      required: [true, "Customer is required"],
       trim: true,
     },
     email: {
@@ -32,13 +32,11 @@ const customerSchema = mongoose.Schema(
       trim: true,
     },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
-customerSchema.index({ business: 1, phoneNo: 1 }, { unique: true });
+supplierSchema.index({ business: 1, phoneNo: 1 }, { unique: true });
 
-const Customer = mongoose.model("Customer", customerSchema);
+const Supplier = mongoose.model("Supplier", supplierSchema);
 
-module.exports = Customer;
+module.exports = Supplier;

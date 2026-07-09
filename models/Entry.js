@@ -10,7 +10,10 @@ const entrySchema = mongoose.Schema(
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
-      required: [true, "An entry must be linked to a customer"],
+    },
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
     },
     entryType: {
       type: String,
@@ -42,6 +45,16 @@ const entrySchema = mongoose.Schema(
     timestamps: true,
   },
 );
+
+entrySchema.pre("validate", function () {
+  if (this.entryType === "sale" && !this.customer) {
+    throw new Error("Customer is required for sale entries.");
+  }
+
+  if (this.entryType === "purchase" && !this.supplier) {
+    throw new Error("Supplier is required for purchase entries.");
+  }
+});
 
 const Entry = mongoose.model("Entry", entrySchema);
 
