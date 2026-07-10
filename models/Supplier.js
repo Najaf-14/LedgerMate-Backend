@@ -9,7 +9,7 @@ const supplierSchema = mongoose.Schema(
     },
     name: {
       type: String,
-      required: [true, "Customer is required"],
+      required: [true, "Supplier is required"],
       trim: true,
     },
     email: {
