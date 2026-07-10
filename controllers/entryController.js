@@ -3,20 +3,24 @@ const entryServices = require("../services/entryServices");
 const createEntry = async (req, res) => {
   try {
     const {
-      name,
+      customer,
+      supplier,
       entryType,
       itemsDescription,
       manualTotalPrice,
       transactionDate,
-      paymentType,
     } = req.body;
-
-    if (!name?.trim()) {
-      throw new Error("Customer name is required");
-    }
 
     if (!entryType?.trim()) {
       throw new Error("Entry type is required");
+    }
+
+    if (entryType === "sale" && !customer) {
+      throw new Error("Customer is required for sale entries");
+    }
+
+    if (entryType === "purchase" && !supplier) {
+      throw new Error("Supplier is required for purchase entries");
     }
 
     if (!itemsDescription?.trim()) {
