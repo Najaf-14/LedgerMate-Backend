@@ -1,32 +1,54 @@
-const Entry = require("../models/Entry");
-const Customer = require("../models/Customer");
+const Entry = require("../models/Entry")
+const Customer = require("../models/Customer")
+const Supplier = require("../models/Supplier")
 
 const createEntry = async (data, businessId) => {
-  const customer = await Customer.findOne({
-    business: businessId,
-    name: data.name,
-  });
+  const { entryType, customer, supplier } = data;
 
-  if (!customer) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    throw error;
+  if (entryType === "sale") {
+    const customerExists = await Customer.findOne({
+      _id: customer,
+      business: businessId,
+    });
+
+    if (!customerExists) {
+      const error = new Error("Customer not found");
+      error.statusCode = 404;
+      throw error;
+    }
   }
 
-  return await Entry.create({
+  if (entryType === "purchase") {
+    const supplierExists = await Supplier.findOne({
+      _id: supplier,
+      business: businessId,
+    });
+
+    if (!supplierExists) {
+      const error = new Error("Supplier not found");
+      error.statusCode = 404;
+      throw error;
+    }
+  }
+
+  const entry = await Entry.create({
     business: businessId,
-    customer: customer._id,
-    entryType: data.entryType,
+    customer: entryType === "sale" ? customer : undefined,
+    supplier: entryType === "purchase" ? supplier : undefined,
+    entryType,
     itemsDescription: data.itemsDescription,
     manualTotalPrice: data.manualTotalPrice,
     transactionDate: data.transactionDate,
     notes: data.notes,
   });
+
+  return entry;
 };
 
 const getEntries = async (businessId) => {
   return await Entry.find({ business: businessId })
     .populate("customer")
+    .populate("supplier")
     .sort({ transactionDate: -1 });
 };
 

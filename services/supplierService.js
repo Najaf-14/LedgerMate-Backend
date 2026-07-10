@@ -46,11 +46,11 @@ const getSupplier = async (id, businessId) => {
     throw error;
   }
 
-  return customer;
+  return supplier;
 };
 
 const updateSupplier = async (id, data, businessId) => {
-  const supplier = await Customer.findOneAndUpdate(
+  const supplier = await Supplier.findOneAndUpdate(
     {
       _id: id,
       business: businessId,
@@ -63,7 +63,7 @@ const updateSupplier = async (id, data, businessId) => {
   );
 
   if (!supplier) {
-    const error = new Error("Customer not found");
+    const error = new Error("Supplier not found");
     error.statusCode = 404;
     throw error;
   }
@@ -83,7 +83,7 @@ const deleteSupplier = async (id, businessId) => {
     throw error;
   }
 
-  await customer.deleteOne();
+  await supplier.deleteOne();
 };
 
 module.exports = {
