@@ -28,7 +28,7 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/customer", customerRoutes);
-app.use("/api/supplier", supplierRoutes);
+app.use("/api/supplier", supplierRoutes);  
 app.use("/api/entry", entryRoutes);
 
 const PORT = process.env.PORT;
