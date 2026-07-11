@@ -10,7 +10,7 @@ const {
   searchSuppliers,
   updateSupplier,
   deleteSupplier,
-} = require("../controllers/SupplierController"); 
+} = require("../controllers/supplierController"); 
 
 router.use(authMiddleware);
 
