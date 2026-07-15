@@ -1,4 +1,5 @@
 const Supplier = require("../models/Supplier");
+const Business = require("../models/Business");
 
 const createSupplier = async (data, businessId) => {
   const business = await Business.findById(businessId);
