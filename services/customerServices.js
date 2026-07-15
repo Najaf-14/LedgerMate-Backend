@@ -1,15 +1,9 @@
 const Customer = require("../models/Customer");
-const Business = require("../models/Business");
+const getBusinessByUserId = require("../utils/getBusiness");
 const PLAN_LIMITS = require("../config/planLimits");
 
 const createCustomer = async (data, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const customerCount = await Customer.countDocuments({
     business: business._id,
@@ -43,13 +37,7 @@ const createCustomer = async (data, userId) => {
 };
 
 const getCustomers = async (userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   return await Customer.find({
     business: business._id,
@@ -57,13 +45,7 @@ const getCustomers = async (userId) => {
 };
 
 const searchCustomers = async (query, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   return await Customer.find({
     business: business._id,
@@ -75,13 +57,7 @@ const searchCustomers = async (query, userId) => {
 };
 
 const getCustomer = async (id, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const customer = await Customer.findOne({
     _id: id,
@@ -98,13 +74,7 @@ const getCustomer = async (id, userId) => {
 };
 
 const updateCustomer = async (id, data, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const customer = await Customer.findOneAndUpdate(
     {
@@ -128,13 +98,7 @@ const updateCustomer = async (id, data, userId) => {
 };
 
 const deleteCustomer = async (id, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const customer = await Customer.findOne({
     _id: id,
