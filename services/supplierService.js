@@ -1,6 +1,28 @@
 const Supplier = require("../models/Supplier");
 
 const createSupplier = async (data, businessId) => {
+  const business = await Business.findById(businessId);
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const supplierCount = await Supplier.countDocuments({
+    business: businessId,
+  });
+
+  const limit = PLAN_LIMITS[business.mode].suppliers;
+
+  if (supplierCount >= limit) {
+    const error = new Error(
+      "Supplier limit reached. Upgrade to Premium to continue.",
+    );
+    error.statusCode = 403;
+    throw error;
+  }
+
   const supplierExists = await Supplier.findOne({
     business: businessId,
     phoneNo: data.phoneNo,
