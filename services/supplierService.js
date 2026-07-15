@@ -3,13 +3,7 @@ const Business = require("../models/Business");
 const PLAN_LIMITS = require("../config/planLimits");
 
 const createSupplier = async (data, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const supplierCount = await Supplier.countDocuments({
     business: business._id,
@@ -43,13 +37,7 @@ const createSupplier = async (data, userId) => {
 };
 
 const getSuppliers = async (userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   return await Supplier.find({
     business: business._id,
@@ -57,13 +45,7 @@ const getSuppliers = async (userId) => {
 };
 
 const searchSuppliers = async (query, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   return await Supplier.find({
     business: business._id,
@@ -75,13 +57,7 @@ const searchSuppliers = async (query, userId) => {
 };
 
 const getSupplier = async (id, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const supplier = await Supplier.findOne({
     _id: id,
@@ -98,13 +74,7 @@ const getSupplier = async (id, userId) => {
 };
 
 const updateSupplier = async (id, data, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const supplier = await Supplier.findOneAndUpdate(
     {
@@ -128,13 +98,7 @@ const updateSupplier = async (id, data, userId) => {
 };
 
 const deleteSupplier = async (id, userId) => {
-  const business = await Business.findOne({ userId });
-
-  if (!business) {
-    const error = new Error("Business not found");
-    error.statusCode = 404;
-    throw error;
-  }
+  const business = await getBusinessByUserId(userId);
 
   const supplier = await Supplier.findOne({
     _id: id,
