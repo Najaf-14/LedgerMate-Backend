@@ -1,8 +1,9 @@
 const Supplier = require("../models/Supplier");
 const Business = require("../models/Business");
+const PLAN_LIMITS = require("../config/planLimits");
 
-const createSupplier = async (data, businessId) => {
-  const business = await Business.findById(businessId);
+const createSupplier = async (data, userId) => {
+  const business = await Business.findOne({ userId });
 
   if (!business) {
     const error = new Error("Business not found");
@@ -11,7 +12,7 @@ const createSupplier = async (data, businessId) => {
   }
 
   const supplierCount = await Supplier.countDocuments({
-    business: businessId,
+    business: business._id,
   });
 
   const limit = PLAN_LIMITS[business.mode].suppliers;
@@ -25,7 +26,7 @@ const createSupplier = async (data, businessId) => {
   }
 
   const supplierExists = await Supplier.findOne({
-    business: businessId,
+    business: business._id,
     phoneNo: data.phoneNo,
   });
 
@@ -37,19 +38,35 @@ const createSupplier = async (data, businessId) => {
 
   return await Supplier.create({
     ...data,
-    business: businessId,
+    business: business._id,
   });
 };
 
-const getSuppliers = async (businessId) => {
+const getSuppliers = async (userId) => {
+  const business = await Business.findOne({ userId });
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   return await Supplier.find({
-    business: businessId,
+    business: business._id,
   }).sort({ createdAt: -1 });
 };
 
-const searchSuppliers = async (query, businessId) => {
+const searchSuppliers = async (query, userId) => {
+  const business = await Business.findOne({ userId });
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   return await Supplier.find({
-    business: businessId,
+    business: business._id,
     name: {
       $regex: query,
       $options: "i",
@@ -57,10 +74,18 @@ const searchSuppliers = async (query, businessId) => {
   }).sort({ createdAt: -1 });
 };
 
-const getSupplier = async (id, businessId) => {
+const getSupplier = async (id, userId) => {
+  const business = await Business.findOne({ userId });
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   const supplier = await Supplier.findOne({
     _id: id,
-    business: businessId,
+    business: business._id,
   });
 
   if (!supplier) {
@@ -72,11 +97,19 @@ const getSupplier = async (id, businessId) => {
   return supplier;
 };
 
-const updateSupplier = async (id, data, businessId) => {
+const updateSupplier = async (id, data, userId) => {
+  const business = await Business.findOne({ userId });
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   const supplier = await Supplier.findOneAndUpdate(
     {
       _id: id,
-      business: businessId,
+      business: business._id,
     },
     data,
     {
@@ -94,10 +127,18 @@ const updateSupplier = async (id, data, businessId) => {
   return supplier;
 };
 
-const deleteSupplier = async (id, businessId) => {
+const deleteSupplier = async (id, userId) => {
+  const business = await Business.findOne({ userId });
+
+  if (!business) {
+    const error = new Error("Business not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   const supplier = await Supplier.findOne({
     _id: id,
-    business: businessId,
+    business: business._id,
   });
 
   if (!supplier) {
@@ -112,8 +153,8 @@ const deleteSupplier = async (id, businessId) => {
 module.exports = {
   createSupplier,
   getSuppliers,
-  getSupplier,
   searchSuppliers,
+  getSupplier,
   updateSupplier,
   deleteSupplier,
 };
