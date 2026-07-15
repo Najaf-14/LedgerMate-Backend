@@ -1,10 +1,10 @@
 module.exports = {
   simple: {
-    customers: 20,
+    customers: 2,
     suppliers: 20,
   },
 
-  premium: {
+  advanced: {
     customers: Infinity,
     suppliers: Infinity,
   },
