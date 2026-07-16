@@ -11,7 +11,6 @@ const createEntry = async (req, res) => {
       transactionDate,
     } = req.body;
 
-    console.log("Customer ", customer);
     if (!entryType?.trim()) {
       throw new Error("Entry type is required");
     }
