@@ -11,6 +11,7 @@ const createEntry = async (req, res) => {
       transactionDate,
     } = req.body;
 
+    console.log("Customer ", customer);
     if (!entryType?.trim()) {
       throw new Error("Entry type is required");
     }
@@ -50,30 +51,24 @@ const createEntry = async (req, res) => {
   }
 };
 
-const getEntries = async (userId, page = 1, limit = 10) => {
-  const business = await getBusinessByUserId(userId);
+const getEntries = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-  const skip = (page - 1) * limit;
+    const result = await entryServices.getEntries(req.user.id, page, limit);
 
-  const entries = await Entry.find({
-    business: business._id,
-  })
-    .populate("customer")
-    .populate("supplier")
-    .sort({ transactionDate: -1 })
-    .skip(skip)
-    .limit(limit);
-
-  const totalEntries = await Entry.countDocuments({
-    business: business._id,
-  });
-
-  return {
-    entries,
-    currentPage: page,
-    totalPages: Math.ceil(totalEntries / limit),
-    totalEntries,
-  };
+    res.status(200).json({
+      success: true,
+      message: "All entries",
+      ...result,
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 const getEntry = async (req, res) => {
