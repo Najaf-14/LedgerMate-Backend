@@ -74,10 +74,12 @@ const getEntries = async (userId, page = 1, limit = 10) => {
   };
 };
 
-const getEntry = async (id, businessId) => {
+const getEntry = async (id, userId) => {
+  const business = await getBusinessByUserId(userId);
+
   const entry = await Entry.findOne({
     _id: id,
-    business: businessId,
+    business: business._id,
   }).populate("customer");
 
   if (!entry) {
@@ -89,11 +91,13 @@ const getEntry = async (id, businessId) => {
   return entry;
 };
 
-const updateEntry = async (id, data, businessId) => {
+const updateEntry = async (id, data, userId) => {
+  const business = await getBusinessByUserId(userId);
+
   const entry = await Entry.findOneAndUpdate(
     {
       _id: id,
-      business: businessId,
+      business: business._id,
     },
     data,
     {
@@ -111,10 +115,12 @@ const updateEntry = async (id, data, businessId) => {
   return entry;
 };
 
-const deleteEntry = async (id, businessId) => {
+const deleteEntry = async (id, userId) => {
+  const business = await getBusinessByUserId(userId);
+
   const entry = await Entry.findOne({
     _id: id,
-    business: businessId,
+    business: business._id,
   });
 
   if (!entry) {
