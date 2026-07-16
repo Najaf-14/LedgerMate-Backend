@@ -1,14 +1,17 @@
-const Entry = require("../models/Entry")
-const Customer = require("../models/Customer")
-const Supplier = require("../models/Supplier")
+const Entry = require("../models/Entry");
+const Customer = require("../models/Customer");
+const Supplier = require("../models/Supplier");
+const getBusinessByUserId = require("../utils/getBusiness");
 
-const createEntry = async (data, businessId) => {
+const createEntry = async (data, userId) => {
+  const business = await getBusinessByUserId(userId);
+
   const { entryType, customer, supplier } = data;
 
   if (entryType === "sale") {
     const customerExists = await Customer.findOne({
       _id: customer,
-      business: businessId,
+      business: business._id,
     });
 
     if (!customerExists) {
@@ -21,7 +24,7 @@ const createEntry = async (data, businessId) => {
   if (entryType === "purchase") {
     const supplierExists = await Supplier.findOne({
       _id: supplier,
-      business: businessId,
+      business: business._id,
     });
 
     if (!supplierExists) {
@@ -32,7 +35,7 @@ const createEntry = async (data, businessId) => {
   }
 
   const entry = await Entry.create({
-    business: businessId,
+    business: business._id,
     customer: entryType === "sale" ? customer : undefined,
     supplier: entryType === "purchase" ? supplier : undefined,
     entryType,
@@ -45,11 +48,30 @@ const createEntry = async (data, businessId) => {
   return entry;
 };
 
-const getEntries = async (businessId) => {
-  return await Entry.find({ business: businessId })
+const getEntries = async (userId, page = 1, limit = 10) => {
+  const business = await getBusinessByUserId(userId);
+
+  const skip = (page - 1) * limit;
+
+  const entries = await Entry.find({
+    business: business._id,
+  })
     .populate("customer")
     .populate("supplier")
-    .sort({ transactionDate: -1 });
+    .sort({ transactionDate: -1, _id: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalEntries = await Entry.countDocuments({
+    business: business._id,
+  });
+
+  return {
+    entries,
+    currentPage: page,
+    totalPages: Math.ceil(totalEntries / limit),
+    totalEntries,
+  };
 };
 
 const getEntry = async (id, businessId) => {
