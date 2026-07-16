@@ -50,21 +50,30 @@ const createEntry = async (req, res) => {
   }
 };
 
-const getEntries = async (req, res) => {
-  try {
-    const entries = await entryServices.getEntries(req.user.id);
+const getEntries = async (userId, page = 1, limit = 10) => {
+  const business = await getBusinessByUserId(userId);
 
-    res.status(200).json({
-      success: true,
-      message: "All entries",
-      entries,
-    });
-  } catch (error) {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  const skip = (page - 1) * limit;
+
+  const entries = await Entry.find({
+    business: business._id,
+  })
+    .populate("customer")
+    .populate("supplier")
+    .sort({ transactionDate: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalEntries = await Entry.countDocuments({
+    business: business._id,
+  });
+
+  return {
+    entries,
+    currentPage: page,
+    totalPages: Math.ceil(totalEntries / limit),
+    totalEntries,
+  };
 };
 
 const getEntry = async (req, res) => {
