@@ -1,6 +1,7 @@
 const Supplier = require("../models/Supplier");
 const Business = require("../models/Business");
 const PLAN_LIMITS = require("../config/planLimits");
+const getBusinessByUserId = require("../utils/getBusiness");
 
 const createSupplier = async (data, userId) => {
   const business = await getBusinessByUserId(userId);
