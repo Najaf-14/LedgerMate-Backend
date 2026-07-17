@@ -53,7 +53,7 @@ const createEntry = async (req, res) => {
 const getEntries = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;
 
     const result = await entryServices.getEntries(req.user.id, page, limit);
 
