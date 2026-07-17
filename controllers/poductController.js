@@ -19,7 +19,10 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await productService.getProducts(req.user.id);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const products = await productService.getProducts(req.user.id, page, limit);
 
     res.status(200).json({
       success: true,

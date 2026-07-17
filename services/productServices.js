@@ -65,8 +65,10 @@ const createProduct = async (data, userId) => {
   });
 };
 
-const getProducts = async (userId) => {
+const getProducts = async (userId, page = 1, limit = 20) => {
   const business = await getBusinessByUserId(userId);
+
+  const skip = (page - 1) * limit;
 
   if (business.mode === "simple") {
     const error = new Error("Products are available only for Premium users.");
@@ -74,9 +76,23 @@ const getProducts = async (userId) => {
     throw error;
   }
 
-  return await Product.find({
+  const products = await Product.find({
     business: business._id,
-  }).sort({ createdAt: -1 });
+  })
+    .sort({ createdAt: -1, _id: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalProducts = await Product.countDocuments({
+    business: business._id,
+  });
+
+  return {
+    products,
+    currentPage: page,
+    totalPages: Math.ceil(totalProducts / limit),
+    totalProducts,
+  };
 };
 
 const searchProducts = async (query, userId) => {
