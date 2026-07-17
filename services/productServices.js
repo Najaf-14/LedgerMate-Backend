@@ -2,7 +2,7 @@ const Product = require("../models/Product");
 const getBusinessByUserId = require("../utils/getBusiness");
 
 const createProduct = async (data, userId) => {
-  const { name, price, stocks, category } = data;
+  const { name, price, stocks, unit, category } = data;
 
   if (!name || name.trim() === "") {
     const error = new Error("Product name is required");
@@ -24,6 +24,12 @@ const createProduct = async (data, userId) => {
 
   if (stocks !== undefined && stocks < 0) {
     const error = new Error("Stock cannot be negative");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (unit < 0) {
+    const error = new Error("Unit cannot be negative");
     error.statusCode = 400;
     throw error;
   }
@@ -54,6 +60,7 @@ const createProduct = async (data, userId) => {
     name: name.trim(),
     price,
     stocks,
+    unit,
     category,
   });
 };
@@ -122,6 +129,12 @@ const updateProduct = async (id, data, userId) => {
 
   if (data.price !== undefined && data.price < 0) {
     const error = new Error("Price cannot be negative");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (data.unit !== undefined && data.unit < 0) {
+    const error = new Error("Unit cannot be negative");
     error.statusCode = 400;
     throw error;
   }
