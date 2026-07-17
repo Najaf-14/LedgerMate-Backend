@@ -48,7 +48,7 @@ const createEntry = async (data, userId) => {
   return entry;
 };
 
-const getEntries = async (userId, page = 1, limit = 10) => {
+const getEntries = async (userId, page = 1, limit = 20) => {
   const business = await getBusinessByUserId(userId);
 
   const skip = (page - 1) * limit;
