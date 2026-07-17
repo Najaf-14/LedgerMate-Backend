@@ -28,18 +28,12 @@ const productSchema = new mongoose.Schema(
 
     unit: {
       type: String,
-      default: "unit",
     },
 
     category: {
       type: String,
       default: "General",
       trim: true,
-    },
-
-    isActive: {
-      type: Boolean,
-      default: true,
     },
   },
   {
