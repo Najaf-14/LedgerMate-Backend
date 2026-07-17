@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    unit: {
+      type: String,
+      default: "unit",
+    },
+
     category: {
       type: String,
       default: "General",
