@@ -134,7 +134,6 @@ const deleteEntry = async (id, userId) => {
 
 module.exports = {
   createEntry,
-
   getEntries,
   getEntry,
   updateEntry,
