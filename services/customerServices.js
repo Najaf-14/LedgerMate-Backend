@@ -118,6 +118,7 @@ module.exports = {
   createCustomer,
   getCustomers,
   getCustomer,
+
   searchCustomers,
   updateCustomer,
   deleteCustomer,
