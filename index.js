@@ -1,7 +1,8 @@
+const env = require("dotenv").config();
+
 const express = require("express");
 const app = express();
 
-const env = require("dotenv").config();
 const cors = require("cors");
 const compression = require("compression");
 
