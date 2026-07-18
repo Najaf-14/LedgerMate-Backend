@@ -5,8 +5,8 @@ const env = require("dotenv").config();
 const cors = require("cors");
 const compression = require("compression");
 
-//! Routes
 const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
 const customerRoutes = require("./routes/customerRoutes");
