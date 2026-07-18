@@ -18,6 +18,7 @@ const productRoutes = require("./routes/productRoutes");
 const log = require("./middleware/requestLogger");
 
 app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(compression());
