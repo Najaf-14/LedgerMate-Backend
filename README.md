@@ -1,4 +1,4 @@
-# LedgerMate
+# LedgerMate App
 
 LedgerMate is a Node.js and Express-based backend project for managing business records, customers, suppliers, and financial entries. The project currently includes authentication, business setup, and CRUD operations for customers, suppliers, and ledger entries.
 
