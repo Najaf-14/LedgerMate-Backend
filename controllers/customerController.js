@@ -81,10 +81,7 @@ const searchCustomers = async (req, res) => {
       });
     }
 
-    const customers = await customerServices.searchCustomers(
-      name,
-      req.user.id,
-    );
+    const customers = await customerServices.searchCustomers(name, req.user.id);
 
     res.status(200).json({
       success: true,
