@@ -21,7 +21,6 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(compression());
 
-// log middleware
 app.use(log);
 
 connectDB();
