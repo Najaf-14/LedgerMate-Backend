@@ -65,7 +65,7 @@ const createProduct = async (data, userId) => {
   });
 };
 
-const getProducts = async (userId, page = 1, limit = 20) => {
+const getProducts = async (userId, page = 1, limit = 10) => {
   const business = await getBusinessByUserId(userId);
 
   const skip = (page - 1) * limit;
