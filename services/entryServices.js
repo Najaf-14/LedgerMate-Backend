@@ -1,6 +1,7 @@
 const Entry = require("../models/Entry");
 const Customer = require("../models/Customer");
 const Supplier = require("../models/Supplier");
+const Product = require("../models/Product");
 const getBusinessByUserId = require("../utils/getBusiness");
 
 const createEntry = async (data, userId) => {
@@ -34,13 +35,77 @@ const createEntry = async (data, userId) => {
     }
   }
 
+  if (business.mode === "simple") {
+    const entry = await Entry.create({
+      business: business._id,
+      customer: entryType === "sale" ? customer : undefined,
+      supplier: entryType === "purchase" ? supplier : undefined,
+      entryType,
+      itemsDescription: data.itemsDescription,
+      manualTotalPrice: data.manualTotalPrice,
+      transactionDate: data.transactionDate,
+      notes: data.notes,
+    });
+
+    return entry;
+  }
+
+  let subTotal = 0;
+  const products = [];
+
+  for (const item of data.products) {
+    const product = await Product.findOne({
+      _id: item.product,
+      business: business._id,
+    });
+
+    if (!product) {
+      const error = new Error("Product not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (entryType === "sale" && product.stock < item.quantity) {
+      const error = new Error(
+        `${product.name} has only ${product.stock} items available in stock`,
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const total = product.price * item.quantity;
+
+    subTotal += total;
+
+    products.push({
+      product: product._id,
+      name: product.name,
+      price: product.price,
+      quantity: item.quantity,
+      total,
+    });
+
+    if (entryType === "sale") {
+      product.stock -= item.quantity;
+    } else {
+      product.stock += item.quantity;
+    }
+
+    await product.save();
+  }
+
+  const discount = data.discount || 0;
+  const totalAmount = subTotal - discount;
+
   const entry = await Entry.create({
     business: business._id,
     customer: entryType === "sale" ? customer : undefined,
     supplier: entryType === "purchase" ? supplier : undefined,
     entryType,
-    itemsDescription: data.itemsDescription,
-    manualTotalPrice: data.manualTotalPrice,
+    products,
+    subtotal: subTotal,
+    discount,
+    totalAmount,
     transactionDate: data.transactionDate,
     notes: data.notes,
   });
