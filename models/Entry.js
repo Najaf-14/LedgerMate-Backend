@@ -18,18 +18,43 @@ const entrySchema = mongoose.Schema(
     entryType: {
       type: String,
       enum: ["sale", "purchase"],
-      required: [true, "Entry type must be either Sale or Purchase"],
     },
     itemsDescription: {
       type: String,
-      required: [true, "Items/Products description is required"],
       trim: true,
     },
     manualTotalPrice: {
       type: Number,
-      required: [true, "Total price must be entered manually"],
       min: [0, "Price cannot be negative"],
     },
+    products: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        total: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
     transactionDate: {
       type: Date,
       required: [true, "Transaction date is required"],
