@@ -8,7 +8,7 @@ const {
   getProduct,
   updateProduct,
   deleteProduct,
-} = require("../controllers/poductController");
+} = require("../controllers/productController");
 
 router.use(authMiddleware);
 
