@@ -8,6 +8,7 @@ const compression = require("compression");
 
 const connectDB = require("./config/db");
 
+const log = require("./middleware/requestLogger");
 //* Routes
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
@@ -16,14 +17,11 @@ const supplierRoutes = require("./routes/supplierRoutes");
 const entryRoutes = require("./routes/entryRoutes");
 const productRoutes = require("./routes/productRoutes");
 
-const log = require("./middleware/requestLogger");
-
+//* Middlewares
 app.use(cors());
-
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(compression());
-
 app.use(log);
 
 connectDB();
