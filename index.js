@@ -5,10 +5,9 @@ const app = express();
 
 const cors = require("cors");
 const compression = require("compression");
-
 const connectDB = require("./config/db");
-
 const log = require("./middleware/requestLogger");
+
 //* Routes
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
@@ -26,6 +25,7 @@ app.use(log);
 
 connectDB();
 
+// Apis
 app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/customer", customerRoutes);
