@@ -8,6 +8,7 @@ const compression = require("compression");
 
 const connectDB = require("./config/db");
 
+//* Routes
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
 const customerRoutes = require("./routes/customerRoutes");
