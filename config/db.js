@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 // Force reliable DNS resolvers before doing SRV lookups
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
+// Connection
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URL);
