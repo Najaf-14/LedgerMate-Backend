@@ -2,6 +2,9 @@ const User = require("../models/User");
 const Business = require("../models/Business");
 const bycrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
+const crypto = require("crypto");
+
+const sendEmail = require("../utils/sendEmail");
 
 const signup = async (userData) => {
   const { name, email, phoneNo, password, confirmPassword } = userData;
@@ -106,4 +109,57 @@ const getMe = async (userId) => {
   };
 };
 
-module.exports = { signup, login, getMe };
+const forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return {
+      success: true,
+      statusCode: 200,
+      message:
+        "If an account with that email exists, a reset link has been sent.",
+    };
+  }
+
+  await user.save({ validateBeforeSave: false });
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+  const resetLink = `http://localhost:8000/reset-password?token=${resetToken}`;
+
+  await sendEmail({
+    to: user.email,
+    subject: "Reset Your LedgerMate Password",
+    html: `
+        <h2>LedgerMate Password Reset</h2>
+
+        <p>You requested to reset your password.</p>
+
+        <p>
+            <a href="${resetLink}">
+                Reset Password
+            </a>
+        </p>
+
+        <p>This link expires in 15 minutes.</p>
+
+        <p>If you didn't request this, ignore this email.</p>
+    `,
+  });
+
+  return {
+    success: true,
+    statusCode: 200,
+    message:
+      "If an account with that email exists, a reset link has been sent.",
+  };
+};
+
+module.exports = { signup, login, getMe, forgotPassword };
