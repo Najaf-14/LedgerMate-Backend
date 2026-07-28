@@ -50,4 +50,20 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe };
+const forgotPassword = async (req, res) => {
+  try {
+    const result = await authService.forgotPassword(req.body.email);
+
+    return res.status(result.statusCode).json({
+      success: result.success,
+      message: result.message,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { signup, login, getMe, forgotPassword };
