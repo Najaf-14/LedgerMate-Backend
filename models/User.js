@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema(
         "Password must contain at least one uppercase letter, one lowercase letter, one number, one special character and be at least 8 characters long.",
       ],
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
     role: {
       type: String,
       enum: ["user", "admin", "super_admin"],
