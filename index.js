@@ -34,6 +34,7 @@ app.use("/api/supplier", supplierRoutes);
 app.use("/api/entry", entryRoutes);
 app.use("/api/product", productRoutes);
 
+//test route
 app.get("/", (req, res) => {
   res.send("LedgerMate API is running...");
 });
