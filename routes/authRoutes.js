@@ -13,7 +13,6 @@ const {
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/me", authMiddleware, getMe);
-
 router.post("/forgot-password", forgotPassword);
 
 module.exports = router;
