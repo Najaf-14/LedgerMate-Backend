@@ -8,11 +8,13 @@ const {
   login,
   getMe,
   forgotPassword,
+  resetPassword,
 } = require("../controllers/authController");
 
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/me", authMiddleware, getMe);
 router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;
