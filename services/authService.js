@@ -121,7 +121,6 @@ const forgotPassword = async (email) => {
     };
   }
 
-  await user.save({ validateBeforeSave: false });
   const resetToken = crypto.randomBytes(32).toString("hex");
 
   const hashedToken = crypto
@@ -131,6 +130,8 @@ const forgotPassword = async (email) => {
 
   user.resetPasswordToken = hashedToken;
   user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
+
+  await user.save({ validateBeforeSave: false });
 
   const resetLink = `http://localhost:8000/reset-password?token=${resetToken}`;
 
