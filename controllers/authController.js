@@ -66,4 +66,23 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe, forgotPassword };
+const resetPassword = async (req, res) => {
+  try {
+    const result = await authService.resetPassword(
+      req.body.token,
+      req.body.password,
+    );
+
+    return res.status(result.statusCode).json({
+      success: result.success,
+      message: result.message,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { signup, login, getMe, forgotPassword, resetPassword };
