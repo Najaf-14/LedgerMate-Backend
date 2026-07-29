@@ -163,4 +163,29 @@ const forgotPassword = async (email) => {
   };
 };
 
-module.exports = { signup, login, getMe, forgotPassword };
+const resetPassword = async (token, password) => {
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired reset token");
+  }
+
+  user.password = password;
+
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Password reset successfully",
+  };
+};
+module.exports = { signup, login, getMe, forgotPassword, resetPassword };
