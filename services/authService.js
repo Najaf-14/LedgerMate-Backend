@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Business = require("../models/Business");
-const bycrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const crypto = require("crypto");
 
@@ -59,7 +59,7 @@ const login = async (loginData) => {
     throw new Error("User does not exist");
   }
 
-  const isPasswordValid = await bycrypt.compare(password, user.password);
+  const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
@@ -188,4 +188,70 @@ const resetPassword = async (token, password) => {
     message: "Password reset successfully",
   };
 };
-module.exports = { signup, login, getMe, forgotPassword, resetPassword };
+
+const changePassword = async (userId, oldPassword, newPassword) => {
+  if (!userId) {
+    return {
+      success: false,
+      statusCode: 401,
+      message: "Authentication required",
+    };
+  }
+
+  if (!oldPassword?.trim() || !newPassword?.trim()) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Old and new password are required",
+    };
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "User not found",
+    };
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isMatch) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Current password is incorrect",
+    };
+  }
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+  if (isSamePassword) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "New password must be different from the current password",
+    };
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Password changed successfully",
+  };
+};
+
+module.exports = {
+  signup,
+  login,
+  getMe,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+};
