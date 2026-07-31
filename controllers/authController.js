@@ -85,4 +85,30 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe, forgotPassword, resetPassword };
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const result = await authService.changePassword(
+      req.user?._id || req.user?.id,
+      oldPassword,
+      newPassword,
+    );
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  signup,
+  login,
+  getMe,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+};
