@@ -9,11 +9,13 @@ const {
   getMe,
   forgotPassword,
   resetPassword,
+  changePassword,
 } = require("../controllers/authController");
 
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/me", authMiddleware, getMe);
+router.post("/change-password", authMiddleware, changePassword);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
