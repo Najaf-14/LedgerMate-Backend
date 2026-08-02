@@ -16,6 +16,7 @@ const productRoutes = require("./routes/productRoutes");
 
 const app = express();
 
+// Connect to the database
 connectDB();
 
 // Middleware
