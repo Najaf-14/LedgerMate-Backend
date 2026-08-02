@@ -75,28 +75,33 @@ The app will run using nodemon and listen on the port defined in your .env file.
 ## Main API routes
 
 ### Authentication
+
 - POST /api/auth/signup
 - POST /api/auth/login
 - GET /api/auth/me
 
 ### Business
+
 - POST /api/business
 - GET /api/business
 - PUT /api/business/:id
 
 ### Customers
+
 - POST /api/customer
 - GET /api/customer
 - PUT /api/customer/:id
 - DELETE /api/customer/:id
 
 ### Suppliers
+
 - POST /api/supplier
 - GET /api/supplier
 - PUT /api/supplier/:id
 - DELETE /api/supplier/:id
 
 ### Entries
+
 - POST /api/entry
 - GET /api/entry
 - GET /api/entry/:id
