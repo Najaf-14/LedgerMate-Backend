@@ -13,7 +13,7 @@ const requestLogger = (req, res, next) => {
 
   fs.appendFile(logFilePath, log, (error) => {
     if (error) {
-      console.error("Error writing to log  file:", error);
+      console.error("Error writing to log file:", error);
     }
   });
 
