@@ -94,9 +94,6 @@ const changePassword = async (req, res) => {
       oldPassword,
       newPassword,
     );
-    console.log(req.user._id);
-    console.log(req.user.id);
-
     return res.status(result.statusCode).json(result);
   } catch (error) {
     return res.status(500).json({
