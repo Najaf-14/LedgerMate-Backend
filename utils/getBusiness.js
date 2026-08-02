@@ -1,5 +1,4 @@
 // * Helper function for customer and supplier
-
 const Business = require("../models/Business");
 
 const getBusinessByUserId = async (userId) => {
