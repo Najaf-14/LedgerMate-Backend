@@ -83,7 +83,7 @@ const updateCustomer = async (id, data, userId) => {
     },
     data,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     },
   );
