@@ -5,6 +5,7 @@ const cors = require("cors");
 const compression = require("compression");
 
 const connectDB = require("./config/db");
+
 const log = require("./middleware/requestLogger");
 
 const authRoutes = require("./routes/authRoutes");
