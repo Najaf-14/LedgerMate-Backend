@@ -10,6 +10,7 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
+  openResetPassword,
 } = require("../controllers/authController");
 
 router.post("/signup", signup);
@@ -18,5 +19,6 @@ router.get("/me", authMiddleware, getMe);
 router.post("/change-password", authMiddleware, changePassword);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.get("/reset-password", openResetPassword);
 
 module.exports = router;
