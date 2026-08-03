@@ -25,7 +25,7 @@ const getBusiness = async (userId) => {
 
 const updateBusiness = async (userId, businessData) => {
   const business = await Business.findOneAndUpdate({ userId }, businessData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 
