@@ -159,16 +159,16 @@ const getEntry = async (id, userId) => {
 const updateEntry = async (id, data, userId) => {
   const business = await getBusinessByUserId(userId);
 
+  if (data.products) {
+    const subtotal = data.products.reduce((sum, p) => sum + p.total, 0);
+    data.subtotal = subtotal;
+    data.totalAmount = subtotal - (data.discount ?? 0);
+  }
+
   const entry = await Entry.findOneAndUpdate(
-    {
-      _id: id,
-      business: business._id,
-    },
+    { _id: id, business: business._id },
     data,
-    {
-      new: true,
-      runValidators: true,
-    },
+    { new: true, runValidators: true },
   );
 
   if (!entry) {
