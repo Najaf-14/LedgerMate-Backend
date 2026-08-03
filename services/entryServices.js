@@ -168,7 +168,7 @@ const updateEntry = async (id, data, userId) => {
   const entry = await Entry.findOneAndUpdate(
     { _id: id, business: business._id },
     data,
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!entry) {
