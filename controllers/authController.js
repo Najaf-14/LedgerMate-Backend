@@ -70,7 +70,7 @@ const resetPassword = async (req, res) => {
   try {
     const result = await authService.resetPassword(
       req.body.token,
-      req.body.password,
+      req.body.newPassword,
     );
 
     return res.status(result.statusCode).json({
@@ -78,7 +78,7 @@ const resetPassword = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -104,6 +104,16 @@ const changePassword = async (req, res) => {
   }
 };
 
+const openResetPassword = (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).send("Token is missing");
+  }
+
+  return res.redirect(`ledgermate://reset-password/${token}`);
+};
+
 module.exports = {
   signup,
   login,
@@ -111,4 +121,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  openResetPassword,
 };
