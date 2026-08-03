@@ -133,7 +133,9 @@ const forgotPassword = async (email) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const resetLink = `http://localhost:8000/reset-password?token=${resetToken}`;
+  // const resetLink = `http://localhost:8000/reset-password?token=${resetToken}`;
+
+  const resetLink = `https://recopy-turbulent-provolone.ngrok-free.dev/api/auth/reset-password?token=${resetToken}`;
 
   await sendEmail({
     to: user.email,
@@ -163,7 +165,7 @@ const forgotPassword = async (email) => {
   };
 };
 
-const resetPassword = async (token, password) => {
+const resetPassword = async (token, newPassword) => {
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   const user = await User.findOne({
@@ -175,7 +177,7 @@ const resetPassword = async (token, password) => {
     throw new Error("Invalid or expired reset token");
   }
 
-  user.password = password;
+  user.password = newPassword;
 
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
