@@ -13,6 +13,7 @@ const customerRoutes = require("./routes/customerRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const entryRoutes = require("./routes/entryRoutes");
 const productRoutes = require("./routes/productRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/customer", customerRoutes);
 app.use("/api/supplier", supplierRoutes);
 app.use("/api/entry", entryRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/payment", paymentRoutes);
 
 //test route
 app.get("/", (req, res) => {
