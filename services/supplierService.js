@@ -84,7 +84,7 @@ const updateSupplier = async (id, data, userId) => {
     },
     data,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     },
   );
