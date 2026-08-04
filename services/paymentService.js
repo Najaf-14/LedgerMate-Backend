@@ -43,6 +43,7 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
     _id: customerId,
     business: businessId,
   });
+
   if (!customer) {
     const error = new Error("Customer not found");
     error.statusCode = 404;
