@@ -7,24 +7,20 @@ const paymentSchema = new mongoose.Schema(
       ref: "Business",
       required: true,
     },
-
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
       required: true,
     },
-
     amount: {
       type: Number,
       required: true,
       min: 1,
     },
-
     note: {
       type: String,
       trim: true,
     },
-
     paymentDate: {
       type: Date,
       required: true,
