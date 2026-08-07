@@ -22,7 +22,7 @@ const getCustomerOutstanding = async (businessId, customerId) => {
           customer: new mongoose.Types.ObjectId(customerId),
         },
       },
-      { $group: { _id: null, total: { $sum: "$amountReceived" } } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
     ]),
   ]);
 
@@ -64,14 +64,7 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
 };
 
 const createPayment = async (businessId, payload) => {
-  const {
-    customer,
-    amountReceived,
-    paymentMethod,
-    note,
-    paymentDate,
-    allowOverpayment,
-  } = payload;
+  const { customer, amount, note, paymentDate, allowOverpayment } = payload;
 
   const customerDoc = await Customer.findOne({
     _id: customer,
@@ -83,35 +76,28 @@ const createPayment = async (businessId, payload) => {
     throw error;
   }
 
-  if (!amountReceived || amountReceived <= 0) {
-    const error = new Error("Amount received must be greater than 0");
+  if (!amount || amount <= 0) {
+    const error = new Error("Amount must be greater than 0");
     error.statusCode = 400;
     throw error;
   }
 
   const { outstanding } = await getCustomerOutstanding(businessId, customer);
 
-  if (!allowOverpayment && amountReceived > outstanding) {
+  if (!allowOverpayment && amount > outstanding) {
     const error = new Error(
-      `Amount received (${amountReceived}) cannot exceed outstanding balance (${outstanding})`,
+      `Amount (${amount}) cannot exceed outstanding balance (${outstanding})`,
     );
     error.statusCode = 400;
     throw error;
   }
 
-  const balanceAfterPayment = Math.max(
-    Math.round((outstanding - amountReceived) * 100) / 100,
-    0,
-  );
-
   const payment = await Payment.create({
     business: businessId,
     customer,
-    amountReceived,
-    paymentMethod: paymentMethod || "cash",
+    amount,
     note,
     paymentDate: paymentDate || Date.now(),
-    balanceAfterPayment,
   });
 
   return payment;
