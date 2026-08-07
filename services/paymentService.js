@@ -64,10 +64,11 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
 };
 
 const createPayment = async (businessId, payload) => {
-  const { applicantId, amount, note, paymentDate, allowOverpayment } = payload;
+  const { customer, amount, note, paymentDate, allowOverpayment } = payload;
 
+  console.log(customer);
   const customerDoc = await Customer.findOne({
-    _id: applicantId,
+    _id: customer,
     business: businessId,
   });
   if (!customerDoc) {
@@ -82,7 +83,7 @@ const createPayment = async (businessId, payload) => {
     throw error;
   }
 
-  const { outstanding } = await getCustomerOutstanding(businessId, applicantId);
+  const { outstanding } = await getCustomerOutstanding(businessId, customer);
 
   if (!allowOverpayment && amount > outstanding) {
     const error = new Error(
@@ -94,7 +95,7 @@ const createPayment = async (businessId, payload) => {
 
   const payment = await Payment.create({
     business: businessId,
-    customer: applicantId,
+    customer,
     amount,
     note,
     paymentDate: paymentDate || Date.now(),
