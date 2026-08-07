@@ -22,8 +22,15 @@ const getCustomerBalance = async (req, res) => {
 const createPayment = async (req, res) => {
   try {
     const business = await getBusinessByUserId(req.user.id);
+    const paymentPayload = {
+      ...req.body,
+      amount: req.body.amount ?? req.body.amountReceived,
+    };
 
-    const payment = await paymentService.createPayment(business._id, req.body);
+    const payment = await paymentService.createPayment(
+      business._id,
+      paymentPayload,
+    );
 
     res.status(201).json({ success: true, data: payment });
   } catch (error) {
