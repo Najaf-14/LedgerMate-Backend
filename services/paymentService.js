@@ -66,7 +66,6 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
 const createPayment = async (businessId, payload) => {
   const { customer, amount, note, paymentDate, allowOverpayment } = payload;
 
-  console.log(customer);
   const customerDoc = await Customer.findOne({
     _id: customer,
     business: businessId,
