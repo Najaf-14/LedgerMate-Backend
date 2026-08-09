@@ -64,34 +64,55 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
 };
 
 const createPayment = async (businessId, payload) => {
-  const { customer, amount, note, paymentDate, allowOverpayment } = payload;
+  const { customer, amount, note, paymentDate } = payload;
 
-  const customerDoc = await Customer.findOne({
-    _id: customer,
-    business: businessId,
-  });
-  if (!customerDoc) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    throw error;
-  }
-
+  // 1. Validate amount
   if (!amount || amount <= 0) {
     const error = new Error("Amount must be greater than 0");
     error.statusCode = 400;
     throw error;
   }
 
-  const { outstanding } = await getCustomerOutstanding(businessId, customer);
+  // 2. Check customer
+  const customerDoc = await Customer.findOne({
+    _id: customer,
+    business: businessId,
+  });
 
-  if (!allowOverpayment && amount > outstanding) {
+  if (!customerDoc) {
+    const error = new Error("Customer not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // 3. Find customer's unpaid sales
+  const entries = await Entry.find({
+    business: businessId,
+    customer,
+    entryType: "sale",
+    remainingAmount: { $gt: 0 },
+  }).sort({
+    transactionDate: 1,
+    _id: 1,
+  });
+
+  // 4. Calculate total outstanding
+  const totalOutstanding = entries.reduce(
+    (sum, entry) => sum + entry.remainingAmount,
+    0,
+  );
+
+  // 5. Prevent overpayment
+  if (amount > totalOutstanding) {
     const error = new Error(
-      `Amount (${amount}) cannot exceed outstanding balance (${outstanding})`,
+      `Amount (${amount}) cannot exceed outstanding balance (${totalOutstanding})`,
     );
+
     error.statusCode = 400;
     throw error;
   }
 
+  // 6. Create payment record
   const payment = await Payment.create({
     business: businessId,
     customer,
@@ -100,7 +121,48 @@ const createPayment = async (businessId, payload) => {
     paymentDate: paymentDate || Date.now(),
   });
 
-  return payment;
+  // 7. Apply payment to old entries
+  let remainingPayment = amount;
+
+  for (const entry of entries) {
+    if (remainingPayment <= 0) {
+      break;
+    }
+
+    const entryOutstanding = entry.remainingAmount;
+
+    const amountToApply = Math.min(remainingPayment, entryOutstanding);
+
+    // Add payment to this entry
+    entry.paidAmount += amountToApply;
+
+    // Calculate remaining
+    entry.remainingAmount = entry.totalAmount - entry.paidAmount;
+
+    // Round to 2 decimal places
+    entry.remainingAmount = Math.round(entry.remainingAmount * 100) / 100;
+
+    // Update payment status
+    if (entry.remainingAmount === 0) {
+      entry.paymentStatus = "paid";
+    } else if (entry.paidAmount > 0) {
+      entry.paymentStatus = "partial";
+    } else {
+      entry.paymentStatus = "unpaid";
+    }
+
+    await entry.save();
+
+    remainingPayment -= amountToApply;
+  }
+
+  // 8. Get updated customer balance
+  const balance = await getCustomerOutstanding(businessId, customer);
+
+  return {
+    payment,
+    balance,
+  };
 };
 
 const getPaymentsByCustomer = async (
