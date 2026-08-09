@@ -36,13 +36,25 @@ const createEntry = async (data, userId) => {
   }
 
   if (business.mode === "simple") {
+    const totalAmount = data.manualTotalPrice || 0;
+
     const entry = await Entry.create({
       business: business._id,
+
       customer: entryType === "sale" ? customer : undefined,
       supplier: entryType === "purchase" ? supplier : undefined,
+
       entryType,
+
       itemsDescription: data.itemsDescription,
       manualTotalPrice: data.manualTotalPrice,
+
+      totalAmount,
+
+      paidAmount: 0,
+      remainingAmount: entryType === "sale" ? totalAmount : 0,
+      paymentStatus: entryType === "sale" ? "unpaid" : undefined,
+
       transactionDate: data.transactionDate,
       notes: data.notes,
     });
@@ -99,13 +111,21 @@ const createEntry = async (data, userId) => {
 
   const entry = await Entry.create({
     business: business._id,
+
     customer: entryType === "sale" ? customer : undefined,
     supplier: entryType === "purchase" ? supplier : undefined,
+
     entryType,
+
     products,
     subtotal: subTotal,
     discount,
     totalAmount,
+
+    paidAmount: 0,
+    remainingAmount: entryType === "sale" ? totalAmount : 0,
+    paymentStatus: entryType === "sale" ? "unpaid" : undefined,
+
     transactionDate: data.transactionDate,
     notes: data.notes,
   });
