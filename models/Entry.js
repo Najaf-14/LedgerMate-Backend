@@ -68,6 +68,21 @@ const entrySchema = mongoose.Schema(
       type: Number,
       min: 0,
     },
+    paidAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    remainingAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "partial", "paid"],
+      default: "unpaid",
+    },
     transactionDate: {
       type: Date,
       required: [true, "Transaction date is required"],
