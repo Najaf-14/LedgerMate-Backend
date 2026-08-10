@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+const firebase = require("./config/firebase");
+console.log("Firebase Admin initialized successfully");
+
 const express = require("express");
 const cors = require("cors");
 const compression = require("compression");
@@ -15,6 +18,8 @@ const supplierRoutes = require("./routes/supplierRoutes");
 const entryRoutes = require("./routes/entryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -36,6 +41,7 @@ app.use("/api/supplier", supplierRoutes);
 app.use("/api/entry", entryRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/notification", notificationRoutes);
 
 //test route
 app.get("/", (req, res) => {
