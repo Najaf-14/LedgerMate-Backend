@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin", "super_admin"],
       default: "user",
     },
+    fcmTokens: [
+      {
+        type: String,
+      },
+    ],
   },
   {
     timestamps: true,
