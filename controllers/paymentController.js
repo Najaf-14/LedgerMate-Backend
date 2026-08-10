@@ -11,17 +11,22 @@ const getCustomerBalance = async (req, res) => {
       customerId,
     );
 
-    res.status(200).json({ success: true, data: summary });
+    res.status(200).json({
+      success: true,
+      data: summary,
+    });
   } catch (error) {
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 const createPayment = async (req, res) => {
   try {
     const business = await getBusinessByUserId(req.user.id);
+
     const paymentPayload = {
       ...req.body,
       amount: req.body.amount ?? req.body.amountReceived,
@@ -32,11 +37,15 @@ const createPayment = async (req, res) => {
       paymentPayload,
     );
 
-    res.status(201).json({ success: true, data: payment });
+    res.status(201).json({
+      success: true,
+      data: payment,
+    });
   } catch (error) {
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -55,11 +64,15 @@ const getPaymentsByCustomer = async (req, res) => {
       },
     );
 
-    res.status(200).json({ success: true, data: result });
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
   } catch (error) {
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -72,11 +85,15 @@ const getPaymentById = async (req, res) => {
       req.params.id,
     );
 
-    res.status(200).json({ success: true, data: payment });
+    res.status(200).json({
+      success: true,
+      data: payment,
+    });
   } catch (error) {
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -86,13 +103,38 @@ const deletePayment = async (req, res) => {
 
     await paymentService.deletePayment(business._id, req.params.id);
 
-    res
-      .status(200)
-      .json({ success: true, message: "Payment deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Payment deleted successfully",
+    });
   } catch (error) {
-    res
-      .status(error.statusCode || 500)
-      .json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getAllPayments = async (req, res) => {
+  try {
+    const business = await getBusinessByUserId(req.user.id);
+
+    const { page = 1, limit = 20 } = req.query;
+
+    const result = await paymentService.getAllPayments(business._id, {
+      page: Number(page),
+      limit: Number(limit),
+    });
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -102,4 +144,5 @@ module.exports = {
   getPaymentsByCustomer,
   getPaymentById,
   deletePayment,
+  getAllPayments,
 };
