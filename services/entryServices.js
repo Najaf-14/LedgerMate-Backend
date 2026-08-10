@@ -66,6 +66,7 @@ const createEntry = async (data, userId) => {
   const products = [];
 
   for (const item of data.products) {
+    // Find product belonging to this business
     const product = await Product.findOne({
       _id: item.product,
       business: business._id,
@@ -77,6 +78,12 @@ const createEntry = async (data, userId) => {
       throw error;
     }
 
+    if (!item.quantity || item.quantity <= 0) {
+      const error = new Error(`Invalid quantity for ${product.name}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
     if (entryType === "sale" && product.stock < item.quantity) {
       const error = new Error(
         `${product.name} has only ${product.stock} items available in stock`,
@@ -85,14 +92,22 @@ const createEntry = async (data, userId) => {
       throw error;
     }
 
-    const total = product.price * item.quantity;
+    const price = item.price ?? product.price;
+
+    if (price < 0) {
+      const error = new Error(`Invalid price for ${product.name}`);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const total = price * item.quantity;
 
     subTotal += total;
 
     products.push({
       product: product._id,
       name: product.name,
-      price: product.price,
+      price,
       quantity: item.quantity,
       total,
     });
@@ -107,6 +122,19 @@ const createEntry = async (data, userId) => {
   }
 
   const discount = data.discount || 0;
+
+  if (discount < 0) {
+    const error = new Error("Discount cannot be negative");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (discount > subTotal) {
+    const error = new Error("Discount cannot be greater than subtotal");
+    error.statusCode = 400;
+    throw error;
+  }
+
   const totalAmount = subTotal - discount;
 
   const entry = await Entry.create({
@@ -118,6 +146,7 @@ const createEntry = async (data, userId) => {
     entryType,
 
     products,
+
     subtotal: subTotal,
     discount,
     totalAmount,
@@ -143,7 +172,10 @@ const getEntries = async (userId, page = 1, limit = 20) => {
   })
     .populate("customer")
     .populate("supplier")
-    .sort({ transactionDate: -1, _id: -1 })
+    .sort({
+      transactionDate: -1,
+      _id: -1,
+    })
     .skip(skip)
     .limit(limit);
 
@@ -180,15 +212,40 @@ const updateEntry = async (id, data, userId) => {
   const business = await getBusinessByUserId(userId);
 
   if (data.products) {
-    const subtotal = data.products.reduce((sum, p) => sum + p.total, 0);
+    data.products = data.products.map((product) => {
+      const price = product.price;
+      const quantity = product.quantity;
+
+      return {
+        ...product,
+        total: price * quantity,
+      };
+    });
+
+    const subtotal = data.products.reduce(
+      (sum, product) => sum + product.total,
+      0,
+    );
+
     data.subtotal = subtotal;
+
     data.totalAmount = subtotal - (data.discount ?? 0);
+
+    if (data.paidAmount !== undefined) {
+      data.remainingAmount = data.totalAmount - data.paidAmount;
+    }
   }
 
   const entry = await Entry.findOneAndUpdate(
-    { _id: id, business: business._id },
+    {
+      _id: id,
+      business: business._id,
+    },
     data,
-    { returnDocument: "after", runValidators: true },
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
   );
 
   if (!entry) {
