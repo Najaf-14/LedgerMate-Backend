@@ -217,6 +217,63 @@ const deletePayment = async (businessId, paymentId) => {
   return payment;
 };
 
+const getAllPayments = async (businessId, { page = 1, limit = 20 }) => {
+  const skip = (page - 1) * limit;
+  const businessObjectId = new mongoose.Types.ObjectId(businessId);
+
+  const [payments, total] = await Promise.all([
+    Payment.find({ business: businessObjectId })
+      .populate("customer", "name phoneNo")
+      .sort({ paymentDate: -1 })
+      .skip(skip)
+      .limit(limit),
+    Payment.countDocuments({ business: businessObjectId }),
+  ]);
+
+  const customerIds = [
+    ...new Set(
+      payments
+        .map((payment) => payment.customer?._id?.toString())
+        .filter(Boolean),
+    ),
+  ].map((id) => new mongoose.Types.ObjectId(id));
+
+  const entries = customerIds.length
+    ? await Entry.find({
+        business: businessObjectId,
+        customer: { $in: customerIds },
+        entryType: "sale",
+      }).sort({ transactionDate: 1, _id: 1 })
+    : [];
+
+  const entriesByCustomer = entries.reduce((map, entry) => {
+    const key = entry.customer.toString();
+    if (!map[key]) map[key] = [];
+    map[key].push(entry);
+    return map;
+  }, {});
+
+  const result = payments.map((payment) => {
+    const paymentObj = payment.toObject();
+    const customerKey = payment.customer?._id?.toString();
+
+    return {
+      ...paymentObj,
+      entries: customerKey ? entriesByCustomer[customerKey] || [] : [],
+    };
+  });
+
+  return {
+    payments: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 module.exports = {
   getCustomerOutstanding,
   getCustomerBalanceSummary,
@@ -224,4 +281,5 @@ module.exports = {
   getPaymentsByCustomer,
   getPaymentById,
   deletePayment,
+  getAllPayments,
 };
