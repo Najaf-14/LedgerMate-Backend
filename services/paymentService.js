@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Payment = require("../models/Payment");
 const Entry = require("../models/Entry");
 const Customer = require("../models/Customer");
+const Supplier = require("../models/Supplier");
 
 const getCustomerOutstanding = async (businessId, customerId) => {
   const [salesAgg, paymentsAgg] = await Promise.all([
@@ -38,6 +39,52 @@ const getCustomerOutstanding = async (businessId, customerId) => {
   };
 };
 
+const getSupplierOutstanding = async (businessId, supplierId) => {
+  const [purchasesAgg, paymentsAgg] = await Promise.all([
+    Entry.aggregate([
+      {
+        $match: {
+          business: new mongoose.Types.ObjectId(businessId),
+          supplier: new mongoose.Types.ObjectId(supplierId),
+          entryType: "purchase",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$totalAmount" },
+        },
+      },
+    ]),
+
+    Payment.aggregate([
+      {
+        $match: {
+          business: new mongoose.Types.ObjectId(businessId),
+          supplier: new mongoose.Types.ObjectId(supplierId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$amount" },
+        },
+      },
+    ]),
+  ]);
+
+  const totalPurchases = purchasesAgg[0]?.total || 0;
+  const totalPaid = paymentsAgg[0]?.total || 0;
+
+  const outstanding = Math.round((totalPurchases - totalPaid) * 100) / 100;
+
+  return {
+    totalPurchases,
+    totalPaid,
+    outstanding: outstanding < 0 ? 0 : outstanding,
+  };
+};
+
 const getCustomerBalanceSummary = async (businessId, customerId) => {
   const customer = await Customer.findOne({
     _id: customerId,
@@ -64,105 +111,179 @@ const getCustomerBalanceSummary = async (businessId, customerId) => {
 };
 
 const createPayment = async (businessId, payload) => {
-  const { customer, amount, note, paymentDate } = payload;
+  const { customer, supplier, amount, note, paymentDate } = payload;
 
-  // 1. Validate amount
   if (!amount || amount <= 0) {
     const error = new Error("Amount must be greater than 0");
     error.statusCode = 400;
     throw error;
   }
 
-  // 2. Check customer
-  const customerDoc = await Customer.findOne({
-    _id: customer,
-    business: businessId,
-  });
+  if (customer) {
+    const customerDoc = await Customer.findOne({
+      _id: customer,
+      business: businessId,
+    });
 
-  if (!customerDoc) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    throw error;
-  }
+    if (!customerDoc) {
+      const error = new Error("Customer not found");
+      error.statusCode = 404;
+      throw error;
+    }
 
-  // 3. Find customer's unpaid sales
-  const entries = await Entry.find({
-    business: businessId,
-    customer,
-    entryType: "sale",
-    remainingAmount: { $gt: 0 },
-  }).sort({
-    transactionDate: 1,
-    _id: 1,
-  });
+    const entries = await Entry.find({
+      business: businessId,
+      customer,
+      entryType: "sale",
+      remainingAmount: { $gt: 0 },
+    }).sort({
+      transactionDate: 1,
+      _id: 1,
+    });
 
-  // 4. Calculate total outstanding
-  const totalOutstanding = entries.reduce(
-    (sum, entry) => sum + entry.remainingAmount,
-    0,
-  );
-
-  // 5. Prevent overpayment
-  if (amount > totalOutstanding) {
-    const error = new Error(
-      `Amount (${amount}) cannot exceed outstanding balance (${totalOutstanding})`,
+    const totalOutstanding = entries.reduce(
+      (sum, entry) => sum + entry.remainingAmount,
+      0,
     );
 
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // 6. Create payment record
-  const payment = await Payment.create({
-    business: businessId,
-    customer,
-    amount,
-    note,
-    paymentDate: paymentDate || Date.now(),
-  });
-
-  // 7. Apply payment to old entries
-  let remainingPayment = amount;
-
-  for (const entry of entries) {
-    if (remainingPayment <= 0) {
-      break;
+    if (amount > totalOutstanding) {
+      const error = new Error(
+        `Amount (${amount}) cannot exceed outstanding balance (${totalOutstanding})`,
+      );
+      error.statusCode = 400;
+      throw error;
     }
 
-    const entryOutstanding = entry.remainingAmount;
+    const payment = await Payment.create({
+      business: businessId,
+      customer,
+      amount,
+      note,
+      paymentDate: paymentDate || Date.now(),
+    });
 
-    const amountToApply = Math.min(remainingPayment, entryOutstanding);
+    let remainingPayment = amount;
 
-    // Add payment to this entry
-    entry.paidAmount += amountToApply;
+    for (const entry of entries) {
+      if (remainingPayment <= 0) {
+        break;
+      }
 
-    // Calculate remaining
-    entry.remainingAmount = entry.totalAmount - entry.paidAmount;
+      const entryOutstanding = entry.remainingAmount;
 
-    // Round to 2 decimal places
-    entry.remainingAmount = Math.round(entry.remainingAmount * 100) / 100;
+      const amountToApply = Math.min(remainingPayment, entryOutstanding);
 
-    // Update payment status
-    if (entry.remainingAmount === 0) {
-      entry.paymentStatus = "paid";
-    } else if (entry.paidAmount > 0) {
-      entry.paymentStatus = "partial";
-    } else {
-      entry.paymentStatus = "unpaid";
+      entry.paidAmount += amountToApply;
+
+      entry.remainingAmount = entry.totalAmount - entry.paidAmount;
+
+      entry.remainingAmount = Math.round(entry.remainingAmount * 100) / 100;
+
+      if (entry.remainingAmount === 0) {
+        entry.paymentStatus = "paid";
+      } else if (entry.paidAmount > 0) {
+        entry.paymentStatus = "partial";
+      } else {
+        entry.paymentStatus = "unpaid";
+      }
+
+      await entry.save();
+
+      remainingPayment -= amountToApply;
     }
 
-    await entry.save();
+    const balance = await getCustomerOutstanding(businessId, customer);
 
-    remainingPayment -= amountToApply;
+    return {
+      payment,
+      balance,
+    };
   }
 
-  // 8. Get updated customer balance
-  const balance = await getCustomerOutstanding(businessId, customer);
+  if (supplier) {
+    const supplierDoc = await Supplier.findOne({
+      _id: supplier,
+      business: businessId,
+    });
 
-  return {
-    payment,
-    balance,
-  };
+    if (!supplierDoc) {
+      const error = new Error("Supplier not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const entries = await Entry.find({
+      business: businessId,
+      supplier,
+      entryType: "purchase",
+      remainingAmount: { $gt: 0 },
+    }).sort({
+      transactionDate: 1,
+      _id: 1,
+    });
+
+    const totalOutstanding = entries.reduce(
+      (sum, entry) => sum + entry.remainingAmount,
+      0,
+    );
+
+    if (amount > totalOutstanding) {
+      const error = new Error(
+        `Amount (${amount}) cannot exceed outstanding balance (${totalOutstanding})`,
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const payment = await Payment.create({
+      business: businessId,
+      supplier,
+      amount,
+      note,
+      paymentDate: paymentDate || Date.now(),
+    });
+
+    let remainingPayment = amount;
+
+    for (const entry of entries) {
+      if (remainingPayment <= 0) {
+        break;
+      }
+
+      const entryOutstanding = entry.remainingAmount;
+
+      const amountToApply = Math.min(remainingPayment, entryOutstanding);
+
+      entry.paidAmount += amountToApply;
+
+      entry.remainingAmount = entry.totalAmount - entry.paidAmount;
+
+      entry.remainingAmount = Math.round(entry.remainingAmount * 100) / 100;
+
+      if (entry.remainingAmount === 0) {
+        entry.paymentStatus = "paid";
+      } else if (entry.paidAmount > 0) {
+        entry.paymentStatus = "partial";
+      } else {
+        entry.paymentStatus = "unpaid";
+      }
+
+      await entry.save();
+
+      remainingPayment -= amountToApply;
+    }
+
+    const balance = await getSupplierOutstanding(businessId, supplier);
+
+    return {
+      payment,
+      balance,
+    };
+  }
+
+  const error = new Error("Either customer or supplier is required");
+  error.statusCode = 400;
+  throw error;
 };
 
 const getPaymentsByCustomer = async (
@@ -276,6 +397,7 @@ const getAllPayments = async (businessId, { page = 1, limit = 20 }) => {
 
 module.exports = {
   getCustomerOutstanding,
+  getSupplierOutstanding,
   getCustomerBalanceSummary,
   createPayment,
   getPaymentsByCustomer,
