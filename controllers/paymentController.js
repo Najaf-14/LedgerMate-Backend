@@ -23,6 +23,25 @@ const getCustomerBalance = async (req, res) => {
   }
 };
 
+const getSupplierBalance = async (req, res, next) => {
+  try {
+    const businessId = req.user.business;
+    const { supplierId } = req.params;
+
+    const balance = await paymentService.getSupplierOutstanding(
+      businessId,
+      supplierId,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: balance,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createPayment = async (req, res) => {
   try {
     const business = await getBusinessByUserId(req.user.id);
@@ -140,6 +159,7 @@ const getAllPayments = async (req, res) => {
 
 module.exports = {
   getCustomerBalance,
+  getSupplierBalance,
   createPayment,
   getPaymentsByCustomer,
   getPaymentById,
