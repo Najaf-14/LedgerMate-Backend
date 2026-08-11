@@ -52,8 +52,8 @@ const createEntry = async (data, userId) => {
       totalAmount,
 
       paidAmount: 0,
-      remainingAmount: entryType === "sale" ? totalAmount : 0,
-      paymentStatus: entryType === "sale" ? "unpaid" : undefined,
+      remainingAmount: totalAmount,
+      paymentStatus: "unpaid",
 
       transactionDate: data.transactionDate,
       notes: data.notes,
@@ -66,7 +66,6 @@ const createEntry = async (data, userId) => {
   const products = [];
 
   for (const item of data.products) {
-    // Find product belonging to this business
     const product = await Product.findOne({
       _id: item.product,
       business: business._id,
@@ -152,8 +151,8 @@ const createEntry = async (data, userId) => {
     totalAmount,
 
     paidAmount: 0,
-    remainingAmount: entryType === "sale" ? totalAmount : 0,
-    paymentStatus: entryType === "sale" ? "unpaid" : undefined,
+    remainingAmount: totalAmount,
+    paymentStatus: "unpaid",
 
     transactionDate: data.transactionDate,
     notes: data.notes,
