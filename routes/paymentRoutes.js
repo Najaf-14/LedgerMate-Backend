@@ -5,6 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   getCustomerBalance,
+  getSupplierBalance,
   createPayment,
   getPaymentsByCustomer,
   getPaymentById,
@@ -15,6 +16,7 @@ const {
 router.use(authMiddleware);
 
 router.get("/customer/:customerId/balance", getCustomerBalance);
+router.get("/supplier/:supplierId/balance", getSupplierBalance);
 router.get("/customer/:customerId", getPaymentsByCustomer);
 router.post("/", createPayment);
 router.get("/:id", getPaymentById);
