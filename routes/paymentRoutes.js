@@ -12,13 +12,14 @@ const {
   deletePayment,
   getAllPayments,
 } = require("../controllers/paymentController");
+const { paymentLimiter } = require("../middleware/rateLimiter");
 
 router.use(authMiddleware);
 
 router.get("/customer/:customerId/balance", getCustomerBalance);
 router.get("/supplier/:supplierId/balance", getSupplierBalance);
 router.get("/customer/:customerId", getPaymentsByCustomer);
-router.post("/", createPayment);
+router.post("/", paymentLimiter, createPayment);
 router.get("/:id", getPaymentById);
 router.delete("/:id", deletePayment);
 router.get("/", getAllPayments);
