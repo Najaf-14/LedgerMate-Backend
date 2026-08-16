@@ -10,6 +10,7 @@ const compression = require("compression");
 const connectDB = require("./config/db");
 
 const log = require("./middleware/requestLogger");
+const { globalRateLimiter } = require("./middleware/rateLimiter");
 
 const authRoutes = require("./routes/authRoutes");
 const businessRoutes = require("./routes/businessRoutes");
@@ -18,9 +19,7 @@ const supplierRoutes = require("./routes/supplierRoutes");
 const entryRoutes = require("./routes/entryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-
 const notificationRoutes = require("./routes/notificationRoutes");
-const { globalRateLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
