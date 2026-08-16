@@ -35,7 +35,7 @@ const paymentLimiter = rateLimit({
 
   message: {
     success: false,
-    message: "Too many payment requests. Please try again later.",
+    message: "Too many payment requests. Please try again later!",
   },
 });
 
