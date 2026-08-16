@@ -12,9 +12,10 @@ const {
   changePassword,
   openResetPassword,
 } = require("../controllers/authController");
+const { authLimiter } = require("../middleware/rateLimiter");
 
 router.post("/signup", signup);
-router.post("/login", login);
+router.post("/login", authLimiter, login);
 router.get("/me", authMiddleware, getMe);
 router.post("/change-password", authMiddleware, changePassword);
 router.post("/forgot-password", forgotPassword);
