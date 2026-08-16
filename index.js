@@ -20,6 +20,7 @@ const productRoutes = require("./routes/productRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
 const notificationRoutes = require("./routes/notificationRoutes");
+const { globalRateLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 app.use(log);
+app.use(globalRateLimiter);
 
 // Routes
 app.use("/api/auth", authRoutes);
