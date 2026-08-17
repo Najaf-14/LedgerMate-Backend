@@ -316,7 +316,9 @@ const getPaymentById = async (businessId, paymentId) => {
   const payment = await Payment.findOne({
     _id: paymentId,
     business: businessId,
-  }).populate("customer", "name phoneNo");
+  })
+    .populate("customer", "name phoneNo")
+    .populate("supplier", "name phoneNo");
   if (!payment) {
     const error = new Error("Payment not found");
     error.statusCode = 404;
@@ -345,10 +347,14 @@ const getAllPayments = async (businessId, { page = 1, limit = 20 }) => {
   const [payments, total] = await Promise.all([
     Payment.find({ business: businessObjectId })
       .populate("customer", "name phoneNo")
+      .populate("supplier", "name phoneNo")
       .sort({ paymentDate: -1 })
       .skip(skip)
       .limit(limit),
-    Payment.countDocuments({ business: businessObjectId }),
+
+    Payment.countDocuments({
+      business: businessObjectId,
+    }),
   ]);
 
   const customerIds = [
@@ -359,7 +365,7 @@ const getAllPayments = async (businessId, { page = 1, limit = 20 }) => {
     ),
   ].map((id) => new mongoose.Types.ObjectId(id));
 
-  const entries = customerIds.length
+  const customerEntries = customerIds.length
     ? await Entry.find({
         business: businessObjectId,
         customer: { $in: customerIds },
@@ -367,25 +373,66 @@ const getAllPayments = async (businessId, { page = 1, limit = 20 }) => {
       }).sort({ transactionDate: 1, _id: 1 })
     : [];
 
-  const entriesByCustomer = entries.reduce((map, entry) => {
+  const entriesByCustomer = customerEntries.reduce((map, entry) => {
     const key = entry.customer.toString();
-    if (!map[key]) map[key] = [];
+
+    if (!map[key]) {
+      map[key] = [];
+    }
+
     map[key].push(entry);
+
+    return map;
+  }, {});
+
+  const supplierIds = [
+    ...new Set(
+      payments
+        .map((payment) => payment.supplier?._id?.toString())
+        .filter(Boolean),
+    ),
+  ].map((id) => new mongoose.Types.ObjectId(id));
+
+  const supplierEntries = supplierIds.length
+    ? await Entry.find({
+        business: businessObjectId,
+        supplier: { $in: supplierIds },
+        entryType: "purchase",
+      }).sort({ transactionDate: 1, _id: 1 })
+    : [];
+
+  const entriesBySupplier = supplierEntries.reduce((map, entry) => {
+    const key = entry.supplier.toString();
+
+    if (!map[key]) {
+      map[key] = [];
+    }
+
+    map[key].push(entry);
+
     return map;
   }, {});
 
   const result = payments.map((payment) => {
     const paymentObj = payment.toObject();
+
     const customerKey = payment.customer?._id?.toString();
+    const supplierKey = payment.supplier?._id?.toString();
 
     return {
       ...paymentObj,
-      entries: customerKey ? entriesByCustomer[customerKey] || [] : [],
+
+      entries: customerKey
+        ? entriesByCustomer[customerKey] || []
+        : supplierKey
+          ? entriesBySupplier[supplierKey] || []
+          : [],
     };
   });
 
   return {
     payments: result,
+
     pagination: {
       total,
       page,
