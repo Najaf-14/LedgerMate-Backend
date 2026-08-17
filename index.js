@@ -10,6 +10,7 @@ const compression = require("compression");
 const connectDB = require("./config/db");
 
 const log = require("./middleware/requestLogger");
+
 const { globalRateLimiter } = require("./middleware/rateLimiter");
 
 const authRoutes = require("./routes/authRoutes");
