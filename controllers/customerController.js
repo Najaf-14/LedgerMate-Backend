@@ -1,8 +1,9 @@
 const customerServices = require("../services/customerServices");
+const { sendNotificationToUser } = require("../services/notificationService");
 
 const createCustomer = async (req, res) => {
   try {
-    const { name, phoneNo, email, address } = req.body;
+    const { name, phoneNo, email } = req.body;
 
     if (!name?.trim()) {
       throw new Error("Customer name is required");
@@ -15,18 +16,33 @@ const createCustomer = async (req, res) => {
     if (email && !email.trim()) {
       throw new Error("Email cannot be empty");
     }
+
     const customer = await customerServices.createCustomer(
       req.body,
       req.user.id,
     );
 
-    res.status(201).json({
+    try {
+      await sendNotificationToUser(
+        req.user.id,
+        "Customer Added",
+        `Customer "${customer.name}" has been added successfully.`,
+        {
+          type: "CUSTOMER_CREATED",
+          customerId: customer._id.toString(),
+        },
+      );
+    } catch (notificationError) {
+      console.error("Customer notification failed:", notificationError.message);
+    }
+
+    return res.status(201).json({
       success: true,
       message: "Customer created successfully",
       customer,
     });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message,
     });
@@ -125,7 +141,7 @@ const updateCustomer = async (req, res) => {
     });
   } catch (error) {
     res.status(error.statusCode || 500).json({
-      success: true,
+      success: false,
       message: error.message,
     });
   }
