@@ -3,6 +3,7 @@ const Customer = require("../models/Customer");
 const Supplier = require("../models/Supplier");
 const Product = require("../models/Product");
 const getBusinessByUserId = require("../utils/getBusiness");
+const { sendNotificationToUser } = require("./notificationService");
 
 const createEntry = async (data, userId) => {
   const business = await getBusinessByUserId(userId);
@@ -42,20 +43,25 @@ const createEntry = async (data, userId) => {
       business: business._id,
 
       customer: entryType === "sale" ? customer : undefined,
+
       supplier: entryType === "purchase" ? supplier : undefined,
 
       entryType,
 
       itemsDescription: data.itemsDescription,
+
       manualTotalPrice: data.manualTotalPrice,
 
       totalAmount,
 
       paidAmount: 0,
+
       remainingAmount: totalAmount,
+
       paymentStatus: "unpaid",
 
       transactionDate: data.transactionDate,
+
       notes: data.notes,
     });
 
@@ -63,6 +69,7 @@ const createEntry = async (data, userId) => {
   }
 
   let subTotal = 0;
+
   const products = [];
 
   for (const item of data.products) {
@@ -79,7 +86,9 @@ const createEntry = async (data, userId) => {
 
     if (!item.quantity || item.quantity <= 0) {
       const error = new Error(`Invalid quantity for ${product.name}`);
+
       error.statusCode = 400;
+
       throw error;
     }
 
@@ -87,7 +96,9 @@ const createEntry = async (data, userId) => {
       const error = new Error(
         `${product.name} has only ${product.stock} items available in stock`,
       );
+
       error.statusCode = 400;
+
       throw error;
     }
 
@@ -95,7 +106,9 @@ const createEntry = async (data, userId) => {
 
     if (price < 0) {
       const error = new Error(`Invalid price for ${product.name}`);
+
       error.statusCode = 400;
+
       throw error;
     }
 
@@ -112,12 +125,40 @@ const createEntry = async (data, userId) => {
     });
 
     if (entryType === "sale") {
+      const oldStock = product.stock;
+
       product.stock -= item.quantity;
+
+      await product.save();
+
+      if (oldStock >= 5 && product.stock < 5) {
+        try {
+          await sendNotificationToUser(
+            userId,
+
+            "Low Stock Alert",
+
+            `${product.name} is low in stock. Only ${product.stock} left.`,
+
+            {
+              type: "LOW_STOCK",
+
+              productId: product._id.toString(),
+
+              stock: product.stock.toString(),
+            },
+          );
+        } catch (notificationError) {
+          console.error(
+            "Low stock notification failed:",
+            notificationError.message,
+          );
+        }
+      }
     } else {
       product.stock += item.quantity;
+      await product.save();
     }
-
-    await product.save();
   }
 
   const discount = data.discount || 0;
@@ -138,22 +179,16 @@ const createEntry = async (data, userId) => {
 
   const entry = await Entry.create({
     business: business._id,
-
     customer: entryType === "sale" ? customer : undefined,
     supplier: entryType === "purchase" ? supplier : undefined,
-
     entryType,
-
     products,
-
     subtotal: subTotal,
     discount,
     totalAmount,
-
     paidAmount: 0,
     remainingAmount: totalAmount,
     paymentStatus: "unpaid",
-
     transactionDate: data.transactionDate,
     notes: data.notes,
   });
@@ -213,6 +248,7 @@ const updateEntry = async (id, data, userId) => {
   if (data.products) {
     data.products = data.products.map((product) => {
       const price = product.price;
+
       const quantity = product.quantity;
 
       return {
@@ -266,7 +302,9 @@ const deleteEntry = async (id, userId) => {
 
   if (!entry) {
     const error = new Error("Entry not found");
+
     error.statusCode = 404;
+
     throw error;
   }
 
