@@ -3,37 +3,46 @@ const getBusinessByUserId = require("../utils/getBusiness");
 const PLAN_LIMITS = require("../config/planLimits");
 
 const createCustomer = async (data, userId) => {
+  const { name, phoneNo, email, address } = data;
+
   const business = await getBusinessByUserId(userId);
 
   const customerCount = await Customer.countDocuments({
     business: business._id,
   });
 
-  const limit = PLAN_LIMITS[business.mode].customers;
+  const limit = PLAN_LIMITS[business.mode]?.customers;
 
-  if (customerCount >= limit) {
+  if (limit !== undefined && customerCount >= limit) {
     const error = new Error(
-      "Customer limit reached. Upgrade to Premium to continue.",
+      `Customer limit reached. Your ${business.mode} plan allows ${limit} customers.`,
     );
+
     error.statusCode = 403;
     throw error;
   }
 
-  const customerExists = await Customer.findOne({
+  const existingCustomer = await Customer.findOne({
     business: business._id,
-    phoneNo: data.phoneNo,
+    phoneNo,
   });
 
-  if (customerExists) {
-    const error = new Error("Customer already exists");
-    error.statusCode = 400;
+  if (existingCustomer) {
+    const error = new Error("Customer with this phone number already exists");
+
+    error.statusCode = 409;
     throw error;
   }
 
-  return await Customer.create({
-    ...data,
+  const customer = await Customer.create({
     business: business._id,
+    name: name.trim(),
+    phoneNo: phoneNo.trim(),
+    email: email?.trim() || undefined,
+    address: address?.trim() || "",
   });
+
+  return customer;
 };
 
 const getCustomers = async (userId) => {
@@ -76,14 +85,53 @@ const getCustomer = async (id, userId) => {
 const updateCustomer = async (id, data, userId) => {
   const business = await getBusinessByUserId(userId);
 
+  // If phone number is being changed,
+  // check whether another customer already has it
+  if (data.phoneNo) {
+    const existingCustomer = await Customer.findOne({
+      business: business._id,
+      phoneNo: data.phoneNo.trim(),
+      _id: { $ne: id },
+    });
+
+    if (existingCustomer) {
+      const error = new Error(
+        "Another customer with this phone number already exists",
+      );
+
+      error.statusCode = 409;
+      throw error;
+    }
+  }
+
+  const updateData = {
+    ...data,
+  };
+
+  if (updateData.name) {
+    updateData.name = updateData.name.trim();
+  }
+
+  if (updateData.phoneNo) {
+    updateData.phoneNo = updateData.phoneNo.trim();
+  }
+
+  if (updateData.email) {
+    updateData.email = updateData.email.trim();
+  }
+
+  if (updateData.address) {
+    updateData.address = updateData.address.trim();
+  }
+
   const customer = await Customer.findOneAndUpdate(
     {
       _id: id,
       business: business._id,
     },
-    data,
+    updateData,
     {
-      returnDocument: "after",
+      new: true,
       runValidators: true,
     },
   );
@@ -112,6 +160,8 @@ const deleteCustomer = async (id, userId) => {
   }
 
   await customer.deleteOne();
+
+  return customer;
 };
 
 module.exports = {
