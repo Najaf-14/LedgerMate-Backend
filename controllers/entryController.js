@@ -1,4 +1,5 @@
 const entryServices = require("../services/entryServices");
+const { sendNotificationToUser } = require("../services/notificationService");
 
 const createEntry = async (req, res) => {
   try {
@@ -21,6 +22,24 @@ const createEntry = async (req, res) => {
     }
 
     const entry = await entryServices.createEntry(req.body, req.user.id);
+
+    const isSale = entry.entryType === "sale";
+
+    const title = isSale ? "Sale Recorded" : "Purchase Recorded";
+
+    const body = isSale
+      ? `Sale of Rs. ${entry.totalAmount} has been recorded successfully.`
+      : `Purchase of Rs. ${entry.totalAmount} has been recorded successfully.`;
+
+    try {
+      await sendNotificationToUser(req.user.id, title, body, {
+        type: isSale ? "SALE_CREATED" : "PURCHASE_CREATED",
+
+        entryId: entry._id.toString(),
+      });
+    } catch (notificationError) {
+      console.error("Entry notification failed:", notificationError.message);
+    }
 
     res.status(201).json({
       success: true,
