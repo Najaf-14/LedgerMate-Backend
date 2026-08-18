@@ -1,8 +1,16 @@
 const express = require("express");
+
 const router = express.Router();
 
-const { sendNotification } = require("../controllers/notificationController");
+const {
+  sendTestNotification,
+  saveFcmToken,
+} = require("../controllers/notificationController");
 
-router.post("/test", sendNotification);
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.post("/test", authMiddleware, sendTestNotification);
+
+router.post("/token", authMiddleware, saveFcmToken);
 
 module.exports = router;
