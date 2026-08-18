@@ -1,8 +1,9 @@
 const supplierServices = require("../services/supplierService");
+const { sendNotificationToUser } = require("../services/notificationService");
 
 const createSupplier = async (req, res) => {
   try {
-    const { name, phoneNo, email, address } = req.body;
+    const { name, phoneNo, email } = req.body;
 
     if (!name?.trim()) {
       throw new Error("Supplier name is required");
@@ -15,18 +16,33 @@ const createSupplier = async (req, res) => {
     if (email && !email.trim()) {
       throw new Error("Email cannot be empty");
     }
+
     const supplier = await supplierServices.createSupplier(
       req.body,
       req.user.id,
     );
 
-    res.status(201).json({
+    try {
+      await sendNotificationToUser(
+        req.user.id,
+        "Supplier Added",
+        `Supplier "${supplier.name}" has been added successfully.`,
+        {
+          type: "SUPPLIER_CREATED",
+          supplierId: supplier._id.toString(),
+        },
+      );
+    } catch (notificationError) {
+      console.error("Supplier notification failed:", notificationError.message);
+    }
+
+    return res.status(201).json({
       success: true,
       message: "Supplier created successfully",
       supplier,
     });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message,
     });
