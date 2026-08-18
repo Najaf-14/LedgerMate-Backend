@@ -1,8 +1,32 @@
 const productService = require("../services/productServices");
+const { sendNotification } = require("../services/notificationService");
 
 const createProduct = async (req, res) => {
   try {
     const product = await productService.createProduct(req.body, req.user.id);
+
+    if (product.stock < 5) {
+      try {
+        const tokens = (req.user.fcmTokens || []).filter(Boolean);
+
+        for (const token of tokens) {
+          await sendNotification(
+            token,
+            "Low Stock Alert",
+            `${product.name} is low in stock. Only ${product.stock} left.`,
+            {
+              type: "LOW_STOCK",
+              productId: product._id.toString(),
+            },
+          );
+        }
+      } catch (notificationError) {
+        console.error(
+          "Low stock notification failed:",
+          notificationError.message,
+        );
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -85,6 +109,30 @@ const updateProduct = async (req, res) => {
       req.body,
       req.user.id,
     );
+
+    // Low stock notification
+    if (product.stock < 5) {
+      try {
+        const tokens = (req.user.fcmTokens || []).filter(Boolean);
+
+        for (const token of tokens) {
+          await sendNotification(
+            token,
+            "Low Stock Alert",
+            `${product.name} is low in stock. Only ${product.stock} left.`,
+            {
+              type: "LOW_STOCK",
+              productId: product._id.toString(),
+            },
+          );
+        }
+      } catch (notificationError) {
+        console.error(
+          "Low stock notification failed:",
+          notificationError.message,
+        );
+      }
+    }
 
     res.status(200).json({
       success: true,
