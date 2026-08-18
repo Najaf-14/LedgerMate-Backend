@@ -31,6 +31,7 @@ const createEntry = async (req, res) => {
       ? `Sale of Rs. ${entry.totalAmount} has been recorded successfully.`
       : `Purchase of Rs. ${entry.totalAmount} has been recorded successfully.`;
 
+    // Sale / Purchase notification
     try {
       await sendNotificationToUser(req.user.id, title, body, {
         type: isSale ? "SALE_CREATED" : "PURCHASE_CREATED",
