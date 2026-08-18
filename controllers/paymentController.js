@@ -1,3 +1,4 @@
+const { sendNotification } = require("../services/notificationService");
 const paymentService = require("../services/paymentService");
 const getBusinessByUserId = require("../utils/getBusiness");
 
@@ -55,6 +56,25 @@ const createPayment = async (req, res) => {
       business._id,
       paymentPayload,
     );
+
+    // Send notification after payment is successfully created
+    try {
+      const tokens = (req.user.fcmTokens || []).filter(Boolean);
+
+      for (const token of tokens) {
+        await sendNotification(
+          token,
+          "Payment Recorded",
+          `Payment of Rs. ${payment.payment.amount} has been recorded successfully.`,
+          {
+            type: "PAYMENT_CREATED",
+            paymentId: payment.payment._id.toString(),
+          },
+        );
+      }
+    } catch (notificationError) {
+      console.error("Payment notification failed:", notificationError.message);
+    }
 
     res.status(201).json({
       success: true,
