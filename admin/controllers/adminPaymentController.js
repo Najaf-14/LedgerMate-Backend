@@ -7,8 +7,8 @@ const getAdminPayments = async (req, res) => {
       limit = 10,
       search = "",
       type = "",
-      fromDate = "",
-      toDate = "",
+      dateFrom = "",
+      dateTo = "",
     } = req.query;
 
     if (!["", "customer", "supplier"].includes(type)) {
@@ -23,8 +23,8 @@ const getAdminPayments = async (req, res) => {
       limit,
       search,
       type,
-      fromDate,
-      toDate,
+      fromDate: dateFrom,
+      toDate: dateTo,
     });
 
     return res.status(200).json({
