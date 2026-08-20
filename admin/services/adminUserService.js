@@ -25,7 +25,7 @@ const getUsers = async ({ page = 1, limit = 10, search = "", role = "" }) => {
   const [users, totalUsers] = await Promise.all([
     User.find(query)
       .select("-password -resetPasswordToken -resetPasswordExpires -fcmTokens")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
       .limit(currentLimit)
       .lean(),
@@ -37,6 +37,7 @@ const getUsers = async ({ page = 1, limit = 10, search = "", role = "" }) => {
 
   return {
     users,
+
     pagination: {
       currentPage,
       limit: currentLimit,
