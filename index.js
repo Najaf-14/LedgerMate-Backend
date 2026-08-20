@@ -21,9 +21,11 @@ const entryRoutes = require("./routes/entryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+
 const adminAuthRoutes = require("./admin/routes/adminAuthRoutes");
 const adminRoutes = require("./admin/routes/adminRoutes");
 const adminDashboardRoutes = require("./admin/routes/adminDashboardRoutes");
+const adminBusinessRoutes = require("./admin/routes/adminBusinessRoutes");
 
 const app = express();
 
@@ -47,9 +49,11 @@ app.use("/api/entry", entryRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/notification", notificationRoutes);
+
 app.use("/api/admin", adminAuthRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
+app.use("/api/admin/businesses", adminBusinessRoutes);
 
 //test route
 app.get("/", (req, res) => {
