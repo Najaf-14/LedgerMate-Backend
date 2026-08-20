@@ -6,45 +6,61 @@ const getBusinesses = async ({
   search = "",
   mode = "",
 }) => {
-  const skip = (page - 1) * limit;
+  const currentPage = Math.max(Number(page) || 1, 1);
+
+  const currentLimit = Math.min(Math.max(Number(limit) || 10, 1), 100);
+
+  const skip = (currentPage - 1) * currentLimit;
 
   const query = {};
 
-  if (mode) {
+  /*
+   * Mode filter
+   */
+  if (mode && ["simple", "advanced"].includes(mode)) {
     query.mode = mode;
   }
 
+  /*
+   * Search
+   */
   if (search.trim()) {
+    const searchRegex = new RegExp(search.trim(), "i");
+
     query.$or = [
-      { businessName: { $regex: search.trim(), $options: "i" } },
-      { ownerName: { $regex: search.trim(), $options: "i" } },
-      { phoneNo: { $regex: search.trim(), $options: "i" } },
-      { businessType: { $regex: search.trim(), $options: "i" } },
+      { businessName: searchRegex },
+      { ownerName: searchRegex },
+      { phoneNo: searchRegex },
+      { businessType: searchRegex },
     ];
   }
 
+  /*
+   * Fetch businesses + total count
+   */
   const [businesses, totalBusinesses] = await Promise.all([
     Business.find(query)
       .populate("userId", "name email phoneNo role")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
-      .limit(limit)
+      .limit(currentLimit)
       .lean(),
 
     Business.countDocuments(query),
   ]);
 
-  const totalPages = Math.ceil(totalBusinesses / limit);
+  const totalPages = Math.ceil(totalBusinesses / currentLimit);
 
   return {
     businesses,
+
     pagination: {
-      currentPage: page,
-      limit,
+      currentPage,
+      limit: currentLimit,
       totalBusinesses,
       totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
     },
   };
 };
