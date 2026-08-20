@@ -9,74 +9,178 @@ const getAllPayments = async ({
   fromDate = "",
   toDate = "",
 }) => {
-  page = Number(page) || 1;
-  limit = Number(limit) || 10;
+  page = Math.max(Number(page) || 1, 1);
+  limit = Math.max(Number(limit) || 10, 1);
 
   const skip = (page - 1) * limit;
 
-  const filter = {};
+  const match = {};
 
+  // Payment type
   if (type === "customer") {
-    filter.customer = { $exists: true, $ne: null };
+    match.customer = { $exists: true, $ne: null };
   }
 
   if (type === "supplier") {
-    filter.supplier = { $exists: true, $ne: null };
+    match.supplier = { $exists: true, $ne: null };
   }
 
+  // Date filter
   if (fromDate || toDate) {
-    filter.paymentDate = {};
+    match.paymentDate = {};
 
     if (fromDate) {
-      filter.paymentDate.$gte = new Date(`${fromDate}T00:00:00.000Z`);
+      match.paymentDate.$gte = new Date(`${fromDate}T00:00:00.000Z`);
     }
 
     if (toDate) {
-      filter.paymentDate.$lte = new Date(`${toDate}T23:59:59.999Z`);
+      match.paymentDate.$lte = new Date(`${toDate}T23:59:59.999Z`);
     }
   }
 
-  let payments = await Payment.find(filter)
-    .populate("business", "businessName ownerName")
-    .populate("customer", "name phoneNo")
-    .populate("supplier", "name phoneNo")
-    .sort({ paymentDate: -1 })
-    .lean();
+  const pipeline = [
+    {
+      $match: match,
+    },
+
+    // Business
+    {
+      $lookup: {
+        from: "businesses",
+        localField: "business",
+        foreignField: "_id",
+        as: "business",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$business",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Customer
+    {
+      $lookup: {
+        from: "customers",
+        localField: "customer",
+        foreignField: "_id",
+        as: "customer",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$customer",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Supplier
+    {
+      $lookup: {
+        from: "suppliers",
+        localField: "supplier",
+        foreignField: "_id",
+        as: "supplier",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$supplier",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ];
 
   if (search.trim()) {
-    const searchTerm = search.trim().toLowerCase();
+    const searchRegex = new RegExp(search.trim(), "i");
 
-    payments = payments.filter((payment) => {
-      const customerName = payment.customer?.name?.toLowerCase() || "";
-      const customerPhone = payment.customer?.phoneNo?.toLowerCase() || "";
-
-      const supplierName = payment.supplier?.name?.toLowerCase() || "";
-      const supplierPhone = payment.supplier?.phoneNo?.toLowerCase() || "";
-
-      const businessName = payment.business?.businessName?.toLowerCase() || "";
-
-      return (
-        customerName.includes(searchTerm) ||
-        customerPhone.includes(searchTerm) ||
-        supplierName.includes(searchTerm) ||
-        supplierPhone.includes(searchTerm) ||
-        businessName.includes(searchTerm)
-      );
+    pipeline.push({
+      $match: {
+        $or: [
+          { "business.businessName": searchRegex },
+          { "customer.name": searchRegex },
+          { "customer.phoneNo": searchRegex },
+          { "supplier.name": searchRegex },
+          { "supplier.phoneNo": searchRegex },
+        ],
+      },
     });
   }
 
-  const total = payments.length;
+  pipeline.push({
+    $facet: {
+      payments: [
+        {
+          $sort: {
+            paymentDate: -1,
+            _id: -1,
+          },
+        },
 
-  const paginatedPayments = payments.slice(skip, skip + limit);
+        {
+          $skip: skip,
+        },
+
+        {
+          $limit: limit,
+        },
+
+        {
+          $project: {
+            amount: 1,
+            note: 1,
+            paymentDate: 1,
+            createdAt: 1,
+            updatedAt: 1,
+
+            business: {
+              _id: "$business._id",
+              businessName: "$business.businessName",
+              ownerName: "$business.ownerName",
+            },
+
+            customer: {
+              _id: "$customer._id",
+              name: "$customer.name",
+              phoneNo: "$customer.phoneNo",
+            },
+
+            supplier: {
+              _id: "$supplier._id",
+              name: "$supplier.name",
+              phoneNo: "$supplier.phoneNo",
+            },
+          },
+        },
+      ],
+
+      totalCount: [
+        {
+          $count: "count",
+        },
+      ],
+    },
+  });
+
+  const [result] = await Payment.aggregate(pipeline);
+
+  const total = result.totalCount[0]?.count || 0;
+
+  const totalPages = Math.ceil(total / limit);
 
   return {
-    payments: paginatedPayments,
+    payments: result.payments,
+
     pagination: {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
-      hasNextPage: page < Math.ceil(total / limit),
+      totalPages,
+      hasNextPage: page < totalPages,
       hasPreviousPage: page > 1,
     },
   };
