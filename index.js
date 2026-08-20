@@ -28,6 +28,7 @@ const adminRoutes = require("./admin/routes/adminRoutes");
 const adminDashboardRoutes = require("./admin/routes/adminDashboardRoutes");
 const adminBusinessRoutes = require("./admin/routes/adminBusinessRoutes");
 const adminPaymentRoutes = require("./admin/routes/adminPaymentRoutes");
+const adminReportRoutes = require("./admin/routes/adminReportRoutes");
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 app.use("/api/admin/businesses", adminBusinessRoutes);
 app.use("/api/admin/payments", adminPaymentRoutes);
+app.use("/api/admin/reports", adminReportRoutes);
 
 //test route
 app.get("/", (req, res) => {
